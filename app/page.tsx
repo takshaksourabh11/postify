@@ -63,8 +63,33 @@ export default function Home() {
 
             {/* CTA Button */}
             <div className="hidden md:flex">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full font-medium text-sm h-8">
-                Get started
+              <Button 
+                className="relative bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full font-medium text-sm h-8 transition-all duration-300 group overflow-hidden"
+                style={{
+                  boxShadow: `
+                    0 0 15px rgba(249, 115, 22, 0.4),
+                    0 0 30px rgba(249, 115, 22, 0.3),
+                    0 0 45px rgba(249, 115, 22, 0.2),
+                    0 0 60px rgba(249, 115, 22, 0.1),
+                    0 0 75px rgba(249, 115, 22, 0.05)
+                  `
+                }}
+              >
+                {/* Animated glow rings */}
+                <div className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping" style={{ animationDuration: '2s' }}></div>
+                <div className="absolute inset-0 rounded-full bg-orange-400 opacity-50 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                <div className="absolute inset-0 rounded-full bg-orange-300 opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }}></div>
+                
+                {/* Inner glow */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 opacity-80 blur-sm"></div>
+                
+                {/* Button content */}
+                <span className="relative z-10">
+                  Get started
+                </span>
+                
+                {/* Hover effect overlay */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-300 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
               </Button>
             </div>
 
@@ -91,8 +116,33 @@ export default function Home() {
                 <a href="#solutions" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Solutions</a>
                 <a href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">FAQ</a>
                 <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Pricing</a>
-                <Button className="bg-orange-500 hover:bg-orange-600 text-white w-full rounded-full text-sm h-8 mt-2">
-                  Get started
+                <Button 
+                  className="relative bg-orange-500 hover:bg-orange-600 text-white w-full rounded-full text-sm h-8 mt-2 transition-all duration-300 group overflow-hidden"
+                  style={{
+                    boxShadow: `
+                      0 0 15px rgba(249, 115, 22, 0.4),
+                      0 0 30px rgba(249, 115, 22, 0.3),
+                      0 0 45px rgba(249, 115, 22, 0.2),
+                      0 0 60px rgba(249, 115, 22, 0.1),
+                      0 0 75px rgba(249, 115, 22, 0.05)
+                    `
+                  }}
+                >
+                  {/* Animated glow rings */}
+                  <div className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping" style={{ animationDuration: '2s' }}></div>
+                  <div className="absolute inset-0 rounded-full bg-orange-400 opacity-50 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                  <div className="absolute inset-0 rounded-full bg-orange-300 opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }}></div>
+                  
+                  {/* Inner glow */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 opacity-80 blur-sm"></div>
+                  
+                  {/* Button content */}
+                  <span className="relative z-10">
+                    Get started
+                  </span>
+                  
+                  {/* Hover effect overlay */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-300 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
                 </Button>
               </nav>
             </div>
