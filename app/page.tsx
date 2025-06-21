@@ -172,7 +172,9 @@ export default function Home() {
                 <div className="mx-auto max-w-4xl">
                   <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                     Turn Your{' '}
-                    <span className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-black text-white rounded-2xl mx-2 align-middle transition-all duration-300 ease-in-out">
+                    <span className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white rounded-2xl mx-2 align-middle transition-all duration-300 ease-in-out ${
+                      showLinkedIn ? 'bg-[#0077B5]' : 'bg-black'
+                    }`}>
                       {showLinkedIn ? (
                         <Linkedin className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
                       ) : (
