@@ -13,11 +13,11 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showLinkedIn, setShowLinkedIn] = useState(false);
 
-  // Toggle between X and LinkedIn logos every 0.3 seconds
+  // Toggle between X and LinkedIn logos every 0.15 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setShowLinkedIn(prev => !prev);
-    }, 300);
+    }, 150);
 
     return () => clearInterval(interval);
   }, []);
@@ -172,11 +172,12 @@ export default function Home() {
                 <div className="mx-auto max-w-4xl">
                   <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                     Turn Your{' '}
-                    <span className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-black text-white rounded-2xl mx-2 align-middle transition-all duration-300 ease-in-out">
+                    <span className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${showLinkedIn ? 'bg-[#0077B7]' : 'bg-black'} text-white rounded-2xl mx-2 align-middle transition-all duration-150 ease-in-out`}>
                       {showLinkedIn ? (
                         <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" viewBox="0 0 382 382" fill="currentColor">
-                          <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
-                            C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
+                          <path fill="#0077B7" d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
+                            C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z"/>
+                          <path fill="white" d="M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
                             H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
                             c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
                             s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
