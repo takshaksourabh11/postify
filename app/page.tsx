@@ -174,9 +174,11 @@ export default function Home() {
                     Turn Your{' '}
                     <span className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-black text-white rounded-2xl mx-2 align-middle transition-all duration-300 ease-in-out">
                       {showLinkedIn ? (
-                        <Linkedin className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12" />
+                        <Linkedin className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
                       ) : (
-                        <span className="text-2xl sm:text-3xl lg:text-4xl font-bold">𝕏</span>
+                        <svg className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                        </svg>
                       )}
                     </span>{' '}
                     into a Growth Machine
