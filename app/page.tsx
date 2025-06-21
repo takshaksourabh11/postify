@@ -191,9 +191,35 @@ export default function Home() {
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                    <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg">
-                      Connect account
-                      <ArrowRight className="ml-2 h-5 w-5" />
+                    <Button 
+                      size="lg" 
+                      className="relative bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg transition-all duration-300 group overflow-hidden"
+                      style={{
+                        boxShadow: `
+                          0 0 20px rgba(249, 115, 22, 0.4),
+                          0 0 40px rgba(249, 115, 22, 0.3),
+                          0 0 60px rgba(249, 115, 22, 0.2),
+                          0 0 80px rgba(249, 115, 22, 0.1),
+                          0 0 100px rgba(249, 115, 22, 0.05)
+                        `
+                      }}
+                    >
+                      {/* Animated glow rings */}
+                      <div className="absolute inset-0 rounded-full bg-orange-500 opacity-75 animate-ping" style={{ animationDuration: '2s' }}></div>
+                      <div className="absolute inset-0 rounded-full bg-orange-400 opacity-50 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                      <div className="absolute inset-0 rounded-full bg-orange-300 opacity-25 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }}></div>
+                      
+                      {/* Inner glow */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 opacity-80 blur-sm"></div>
+                      
+                      {/* Button content */}
+                      <span className="relative z-10 flex items-center">
+                        Connect account
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                      </span>
+                      
+                      {/* Hover effect overlay */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-300 to-orange-500 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
                     </Button>
                     <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 px-8 py-4 text-lg rounded-full font-medium">
                       <Play className="mr-2 h-5 w-5" />
