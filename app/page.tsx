@@ -171,11 +171,11 @@ export default function Home() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="relative">
             {/* Main Content Grid */}
-            <div className="grid lg:grid-cols-12 gap-8 items-start">
-              {/* Left Dashboard */}
-              <div className="lg:col-span-3 hidden lg:block space-y-10">
+            <div className="grid lg:grid-cols-12 gap-16 items-start">
+              {/* Left Dashboard - Moved further left */}
+              <div className="lg:col-span-3 hidden lg:block space-y-12 -ml-8">
                 {/* Consistency Card - Enlarged, Tilted, and Positioned */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-100 -translate-x-8 -translate-y-4 relative z-20 border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-110 -translate-x-16 -translate-y-4 relative z-20 border border-gray-100">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Consistency</h3>
                   <p className="text-base text-gray-600 mb-6">Current streak: 201 days</p>
                   
@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
 
                 {/* New Followers Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg]">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] -translate-x-4">
                   <p className="text-sm text-gray-600 mb-2">New followers</p>
                   <div className="flex items-baseline">
                     <span className="text-3xl font-bold text-gray-900">1.8K</span>
@@ -217,8 +217,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Center Content */}
-              <div className="lg:col-span-6 text-center mt-16">
+              {/* Center Content - Added more margin */}
+              <div className="lg:col-span-6 text-center mt-16 px-8">
                 <div className="mx-auto max-w-4xl">
                   <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
                     Turn Your{' '}
@@ -237,7 +237,6 @@ export default function Home() {
                   </h1>
                   
                   <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                    {/* Build trust, grow your audience, and turn them into clients — all with AI. */}
                     One Tool. Endless Content. All Automated with AI.
                   </p>
                   
@@ -277,25 +276,13 @@ export default function Home() {
                       Watch Demo
                     </Button>
                   </div>
-
-                  {/* Social Proof */}
-                  {/* <div className="text-center">
-                    <p className="text-sm text-gray-500 mb-4">Trusted by creative teams at</p>
-                    <div className="flex justify-center items-center space-x-8 opacity-60">
-                      <Facebook className="h-6 w-6 text-gray-400" />
-                      <div className="text-2xl font-bold text-gray-400">𝕏</div>
-                      <Instagram className="h-6 w-6 text-gray-400" />
-                      <Linkedin className="h-6 w-6 text-gray-400" />
-                      <div className="text-xl font-bold text-gray-400">G</div>
-                    </div>
-                  </div> */}
                 </div>
               </div>
 
-              {/* Right Dashboard */}
-              <div className="lg:col-span-3 hidden lg:block space-y-12">
+              {/* Right Dashboard - Moved further right */}
+              <div className="lg:col-span-3 hidden lg:block space-y-12 -mr-8">
                 {/* Likes Chart Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg]">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-16 scale-110">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Likes</h3>
                     <span className="text-xs bg-gray-900 text-white px-2 py-1 rounded">Average 57%</span>
@@ -335,7 +322,7 @@ export default function Home() {
                 </div>
 
                 {/* Optimized Reach Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[+8deg]">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[+8deg] translate-x-4">
                   <p className="text-sm text-gray-600 mb-2">Optimized Reach</p>
                   <div className="flex items-baseline">
                     <span className="text-3xl font-bold text-gray-900">0.9k</span>
