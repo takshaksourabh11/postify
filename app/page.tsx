@@ -241,24 +241,25 @@ export default function Home() {
                   </p>
                   
                   <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
-                    {/* Left Curved Arrow */}
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-32 hidden sm:block">
+                    {/* Left Curved Arrow - Positioned to point at Connect Account button */}
+                    <div className="absolute -top-12 left-1/2 transform -translate-x-24 hidden sm:block">
                       <svg 
-                        width="80" 
-                        height="60" 
-                        viewBox="0 0 80 60" 
+                        width="100" 
+                        height="80" 
+                        viewBox="0 0 100 80" 
                         className="text-orange-500 animate-bounce"
                         style={{ animationDuration: '2s', animationDelay: '0s' }}
                       >
                         <path 
-                          d="M10 10 Q 25 5 40 15 Q 55 25 65 40" 
+                          d="M15 15 Q 30 8 50 20 Q 70 32 85 55" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
                           strokeLinecap="round"
                         />
+                        {/* Arrowhead pointing toward button */}
                         <path 
-                          d="M60 35 L 65 40 L 60 45" 
+                          d="M78 50 L 85 55 L 78 60" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
@@ -268,24 +269,25 @@ export default function Home() {
                       </svg>
                     </div>
 
-                    {/* Right Curved Arrow */}
-                    <div className="absolute -top-8 right-1/2 transform translate-x-32 hidden sm:block">
+                    {/* Right Curved Arrow - Positioned to point at Connect Account button */}
+                    <div className="absolute -top-12 right-1/2 transform translate-x-24 hidden sm:block">
                       <svg 
-                        width="80" 
-                        height="60" 
-                        viewBox="0 0 80 60" 
+                        width="100" 
+                        height="80" 
+                        viewBox="0 0 100 80" 
                         className="text-orange-500 animate-bounce"
                         style={{ animationDuration: '2s', animationDelay: '0.5s' }}
                       >
                         <path 
-                          d="M70 10 Q 55 5 40 15 Q 25 25 15 40" 
+                          d="M85 15 Q 70 8 50 20 Q 30 32 15 55" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
                           strokeLinecap="round"
                         />
+                        {/* Arrowhead pointing toward button */}
                         <path 
-                          d="M20 35 L 15 40 L 20 45" 
+                          d="M22 50 L 15 55 L 22 60" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
