@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
-import { XIcon, LinkedInIcon, SocialMediaIcons } from '@/components/ui/social-icons';
+import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -245,6 +245,7 @@ export default function Home() {
                     One Tool. Endless Content. All Automated with AI.
                   </p>
 
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button 
                       size="lg" 
                       className="relative bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg transition-all duration-300 group overflow-hidden"
