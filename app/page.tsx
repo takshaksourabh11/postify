@@ -240,7 +240,61 @@ export default function Home() {
                     One Tool. Endless Content. All Automated with AI.
                   </p>
                   
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                  <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
+                    {/* Left Curved Arrow */}
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-32 hidden sm:block">
+                      <svg 
+                        width="80" 
+                        height="60" 
+                        viewBox="0 0 80 60" 
+                        className="text-orange-500 animate-bounce"
+                        style={{ animationDuration: '2s', animationDelay: '0s' }}
+                      >
+                        <path 
+                          d="M10 10 Q 25 5 40 15 Q 55 25 65 40" 
+                          stroke="currentColor" 
+                          strokeWidth="3" 
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                        <path 
+                          d="M60 35 L 65 40 L 60 45" 
+                          stroke="currentColor" 
+                          strokeWidth="3" 
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Right Curved Arrow */}
+                    <div className="absolute -top-8 right-1/2 transform translate-x-32 hidden sm:block">
+                      <svg 
+                        width="80" 
+                        height="60" 
+                        viewBox="0 0 80 60" 
+                        className="text-orange-500 animate-bounce"
+                        style={{ animationDuration: '2s', animationDelay: '0.5s' }}
+                      >
+                        <path 
+                          d="M70 10 Q 55 5 40 15 Q 25 25 15 40" 
+                          stroke="currentColor" 
+                          strokeWidth="3" 
+                          fill="none"
+                          strokeLinecap="round"
+                        />
+                        <path 
+                          d="M20 35 L 15 40 L 20 45" 
+                          stroke="currentColor" 
+                          strokeWidth="3" 
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+
                     <Button 
                       size="lg" 
                       className="relative bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg transition-all duration-300 group overflow-hidden"
