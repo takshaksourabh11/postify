@@ -36,6 +36,15 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
   };
 
+  // Static heatmap pattern - no more random generation
+  const heatmapPattern = [
+    'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500',
+    'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-gray-100', 'bg-orange-500', 'bg-orange-100',
+    'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-300',
+    'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500',
+    'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header Navigation */}
@@ -45,7 +54,7 @@ export default function Home() {
             {/* Logo */}
             <div className="flex items-center mt-2">
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 text-gray-700">
+                <div className="w-12 h-12 text-gray-700">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                     <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
                   </svg>
@@ -179,16 +188,12 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Consistency</h3>
                   <p className="text-base text-gray-600 mb-6">Current streak: 201 days</p>
                   
-                  {/* Heatmap Grid */}
+                  {/* Static Heatmap Grid */}
                   <div className="grid grid-cols-7 gap-1.5 mb-6">
-                    {Array.from({ length: 35 }).map((_, i) => (
+                    {heatmapPattern.map((colorClass, i) => (
                       <div 
                         key={i} 
-                        className={`w-5 h-5 rounded-sm ${
-                          Math.random() > 0.7 ? 'bg-orange-500' : 
-                          Math.random() > 0.5 ? 'bg-orange-300' : 
-                          Math.random() > 0.3 ? 'bg-orange-100' : 'bg-gray-100'
-                        }`}
+                        className={`w-5 h-5 rounded-sm ${colorClass}`}
                       />
                     ))}
                   </div>
@@ -242,7 +247,7 @@ export default function Home() {
                   
                   <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
                     {/* Left Curved Arrow - Positioned to point at Connect Account button */}
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-37 hidden sm:block">
+                    <div className="absolute -top-12 left-1/2 transform -translate-x-24 hidden sm:block">
                       <svg 
                         width="100" 
                         height="80" 
@@ -320,8 +325,8 @@ export default function Home() {
                       
                       {/* Button content */}
                       <span className="relative z-10 flex items-center">
-                        Try for Free
-                        {/* <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" /> */}
+                        Connect account
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                       </span>
                       
                       {/* Hover effect overlay */}
@@ -338,27 +343,27 @@ export default function Home() {
               {/* Right Dashboard - Moved further right */}
               <div className="lg:col-span-3 hidden lg:block space-y-12 -mr-8">
                 {/* Likes Chart Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-20 scale-10">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-20 scale-100">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Likes</h3>
                     <span className="text-xs bg-gray-900 text-white px-2 py-1 rounded">Average 57%</span>
                   </div>
                   
-                  {/* Chart Area */}
-                  <div className="h-32 relative mb-4">
+                  {/* Chart Area with proper spacing */}
+                  <div className="h-32 relative mb-4 pl-8">
                     <svg className="w-full h-full" viewBox="0 0 300 120">
                       <path
-                        d="M 0 80 Q 50 60 100 70 T 200 50 T 300 60"
+                        d="M 20 80 Q 70 60 120 70 T 220 50 T 300 60"
                         stroke="#FF5C00"
                         strokeWidth="3"
                         fill="none"
                         className="drop-shadow-sm"
                       />
-                      <circle cx="250" cy="38" r="4" fill="#FF5C00" />
+                      <circle cx="270" cy="55" r="4" fill="#FF5C00" />
                     </svg>
                     
-                    {/* Y-axis labels */}
-                    <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-400">
+                    {/* Y-axis labels with proper positioning */}
+                    <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-400 pr-2">
                       <span>8000</span>
                       <span>6000</span>
                       <span>4000</span>
@@ -367,7 +372,7 @@ export default function Home() {
                   </div>
                   
                   {/* X-axis labels */}
-                  <div className="flex justify-between text-xs text-gray-400">
+                  <div className="flex justify-between text-xs text-gray-400 pl-8">
                     <span>Sep</span>
                     <span>Oct</span>
                     <span>Nov</span>
