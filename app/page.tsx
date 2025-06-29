@@ -43,7 +43,7 @@ export default function Home() {
         <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl px-6 py-3 shadow-lg">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center mt-2">
               <div className="flex items-center space-x-2">
                 <div className="w-10 h-10 text-gray-700">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -175,7 +175,7 @@ export default function Home() {
               {/* Left Dashboard - Moved further left */}
               <div className="lg:col-span-3 hidden lg:block space-y-12 -ml-8">
                 {/* Consistency Card - Enlarged, Tilted, and Positioned */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-110 -translate-x-20 -translate-y-4 relative z-20 border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-100 -translate-x-20 -translate-y-4 relative z-20 border border-gray-100">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Consistency</h3>
                   <p className="text-base text-gray-600 mb-6">Current streak: 201 days</p>
                   
@@ -208,7 +208,7 @@ export default function Home() {
                 </div>
 
                 {/* New Followers Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] -translate-x-4">
+                <div className="bg-white rounded-2xl shadow-lg p-3 rotate-[-8deg] -translate-x-4">
                   <p className="text-sm text-gray-600 mb-2">New followers</p>
                   <div className="flex items-baseline">
                     <span className="text-3xl font-bold text-gray-900">1.8K</span>
@@ -242,7 +242,7 @@ export default function Home() {
                   
                   <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
                     {/* Left Curved Arrow - Positioned to point at Connect Account button */}
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-24 hidden sm:block">
+                    <div className="absolute -top-12 left-1/2 transform -translate-x-37 hidden sm:block">
                       <svg 
                         width="100" 
                         height="80" 
@@ -320,8 +320,8 @@ export default function Home() {
                       
                       {/* Button content */}
                       <span className="relative z-10 flex items-center">
-                        Connect account
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                        Try for Free
+                        {/* <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" /> */}
                       </span>
                       
                       {/* Hover effect overlay */}
@@ -338,7 +338,7 @@ export default function Home() {
               {/* Right Dashboard - Moved further right */}
               <div className="lg:col-span-3 hidden lg:block space-y-12 -mr-8">
                 {/* Likes Chart Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-20 scale-110">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-20 scale-10">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Likes</h3>
                     <span className="text-xs bg-gray-900 text-white px-2 py-1 rounded">Average 57%</span>
@@ -354,7 +354,7 @@ export default function Home() {
                         fill="none"
                         className="drop-shadow-sm"
                       />
-                      <circle cx="250" cy="55" r="4" fill="#FF5C00" />
+                      <circle cx="250" cy="38" r="4" fill="#FF5C00" />
                     </svg>
                     
                     {/* Y-axis labels */}
@@ -378,11 +378,11 @@ export default function Home() {
                 </div>
 
                 {/* Optimized Reach Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[+8deg] translate-x-4">
+                <div className="bg-white rounded-2xl shadow-lg p-3 rotate-[+8deg] translate-x-4">
                   <p className="text-sm text-gray-600 mb-2">Optimized Reach</p>
                   <div className="flex items-baseline">
                     <span className="text-3xl font-bold text-gray-900">0.9k</span>
-                    <span className="ml-2 text-sm text-red-500 font-medium">↗ 9%</span>
+                    <span className="ml-2 text-sm text-green-500 font-medium">↗ 9%</span>
                   </div>
                 </div>
               </div>
