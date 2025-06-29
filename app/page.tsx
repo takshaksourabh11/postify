@@ -302,7 +302,7 @@ export default function Home() {
                         fill="none"
                         className="drop-shadow-sm"
                       />
-                      <circle cx="270" cy="55" r="4" fill="#FF5C00" />
+                      <circle cx="270" cy="39" r="4" fill="#FF5C00" />
                     </svg>
                     
                     {/* Y-axis labels with proper positioning */}
