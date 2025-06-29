@@ -45,7 +45,7 @@ export default function Home() {
             {/* Logo */}
             <div className="flex items-center">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 text-gray-700">
+                <div className="w-10 h-10 text-gray-700">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                     <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
                   </svg>
@@ -175,7 +175,7 @@ export default function Home() {
               {/* Left Dashboard - Moved further left */}
               <div className="lg:col-span-3 hidden lg:block space-y-12 -ml-8">
                 {/* Consistency Card - Enlarged, Tilted, and Positioned */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-110 -translate-x-16 -translate-y-4 relative z-20 border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-xl p-8 transform rotate-[+8deg] scale-110 -translate-x-20 -translate-y-4 relative z-20 border border-gray-100">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Consistency</h3>
                   <p className="text-base text-gray-600 mb-6">Current streak: 201 days</p>
                   
@@ -282,7 +282,7 @@ export default function Home() {
               {/* Right Dashboard - Moved further right */}
               <div className="lg:col-span-3 hidden lg:block space-y-12 -mr-8">
                 {/* Likes Chart Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-16 scale-110">
+                <div className="bg-white rounded-2xl shadow-lg p-6 rotate-[-8deg] translate-x-20 scale-110">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Likes</h3>
                     <span className="text-xs bg-gray-900 text-white px-2 py-1 rounded">Average 57%</span>
