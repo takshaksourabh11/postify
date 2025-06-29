@@ -52,7 +52,7 @@ export default function Home() {
         <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl px-6 py-3 shadow-lg">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center mt-2">
+            <div className="flex items-center">
               <div className="flex items-center space-x-2">
                 <div className="w-12 h-12 text-gray-700">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
