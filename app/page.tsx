@@ -326,7 +326,6 @@ export default function Home() {
                       {/* Button content */}
                       <span className="relative z-10 flex items-center">
                         Try for Free
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                       </span>
                       
                       {/* Hover effect overlay */}
