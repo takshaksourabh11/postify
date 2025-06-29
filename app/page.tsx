@@ -244,63 +244,6 @@ export default function Home() {
                   <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                     One Tool. Endless Content. All Automated with AI.
                   </p>
-                  
-                  <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
-                    {/* Left Curved Arrow - Fixed positioning and direction */}
-                    <div className="absolute -top-16 left-1/2 transform -translate-x-32 hidden sm:block">
-                      <svg 
-                        width="120" 
-                        height="90" 
-                        viewBox="0 0 120 90" 
-                        className="text-orange-500 animate-bounce"
-                        style={{ animationDuration: '2s', animationDelay: '0s' }}
-                      >
-                        <path 
-                          d="M20 20 Q 40 10 60 25 Q 80 40 100 65" 
-                          stroke="currentColor" 
-                          strokeWidth="3" 
-                          fill="none"
-                          strokeLinecap="round"
-                        />
-                        {/* Arrowhead pointing toward button */}
-                        <path 
-                          d="M92 60 L 100 65 L 95 72" 
-                          stroke="currentColor" 
-                          strokeWidth="3" 
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-
-                    {/* Right Curved Arrow - Fixed positioning and direction */}
-                    <div className="absolute -top-16 right-1/2 transform translate-x-32 hidden sm:block">
-                      <svg 
-                        width="120" 
-                        height="90" 
-                        viewBox="0 0 120 90" 
-                        className="text-orange-500 animate-bounce"
-                        style={{ animationDuration: '2s', animationDelay: '0.5s' }}
-                      >
-                        <path 
-                          d="M100 20 Q 80 10 60 25 Q 40 40 20 65" 
-                          stroke="currentColor" 
-                          strokeWidth="3" 
-                          fill="none"
-                          strokeLinecap="round"
-                        />
-                        {/* Arrowhead pointing toward button */}
-                        <path 
-                          d="M28 60 L 20 65 L 25 72" 
-                          stroke="currentColor" 
-                          strokeWidth="3" 
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
 
                     <Button 
                       size="lg" 
