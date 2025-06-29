@@ -246,17 +246,17 @@ export default function Home() {
                   </p>
                   
                   <div className="relative flex flex-col sm:flex-row gap-4 justify-center mb-12 mt-16 pt-8">
-                    {/* Left Curved Arrow - Positioned to point at Connect Account button */}
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-24 hidden sm:block">
+                    {/* Left Curved Arrow - Fixed positioning and direction */}
+                    <div className="absolute -top-16 left-1/2 transform -translate-x-32 hidden sm:block">
                       <svg 
-                        width="100" 
-                        height="80" 
-                        viewBox="0 0 100 80" 
+                        width="120" 
+                        height="90" 
+                        viewBox="0 0 120 90" 
                         className="text-orange-500 animate-bounce"
                         style={{ animationDuration: '2s', animationDelay: '0s' }}
                       >
                         <path 
-                          d="M15 15 Q 30 8 50 20 Q 70 32 85 55" 
+                          d="M20 20 Q 40 10 60 25 Q 80 40 100 65" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
@@ -264,7 +264,7 @@ export default function Home() {
                         />
                         {/* Arrowhead pointing toward button */}
                         <path 
-                          d="M78 50 L 85 55 L 78 60" 
+                          d="M92 60 L 100 65 L 95 72" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
@@ -274,17 +274,17 @@ export default function Home() {
                       </svg>
                     </div>
 
-                    {/* Right Curved Arrow - Positioned to point at Connect Account button */}
-                    <div className="absolute -top-12 right-1/2 transform translate-x-24 hidden sm:block">
+                    {/* Right Curved Arrow - Fixed positioning and direction */}
+                    <div className="absolute -top-16 right-1/2 transform translate-x-32 hidden sm:block">
                       <svg 
-                        width="100" 
-                        height="80" 
-                        viewBox="0 0 100 80" 
+                        width="120" 
+                        height="90" 
+                        viewBox="0 0 120 90" 
                         className="text-orange-500 animate-bounce"
                         style={{ animationDuration: '2s', animationDelay: '0.5s' }}
                       >
                         <path 
-                          d="M85 15 Q 70 8 50 20 Q 30 32 15 55" 
+                          d="M100 20 Q 80 10 60 25 Q 40 40 20 65" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
@@ -292,7 +292,7 @@ export default function Home() {
                         />
                         {/* Arrowhead pointing toward button */}
                         <path 
-                          d="M22 50 L 15 55 L 22 60" 
+                          d="M28 60 L 20 65 L 25 72" 
                           stroke="currentColor" 
                           strokeWidth="3" 
                           fill="none"
