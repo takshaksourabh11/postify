@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin } from 'lucide-react';
+import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket } from 'lucide-react';
 import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
 
 export default function Home() {
@@ -344,7 +344,7 @@ export default function Home() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Master Productivity Management
+              How it Works
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Get started in minutes with our simple three-step process
@@ -355,21 +355,21 @@ export default function Home() {
             {[
               {
                 step: "01",
-                title: "Install Extension",
-                description: "Add our browser extension to Chrome, Firefox, or Safari in seconds",
-                icon: <Globe className="h-8 w-8 text-orange-500" />
+                title: "Connect Your Account",
+                description: "Link your X or LinkedIn account to Postify in just a click and get ready to automate your content game.",
+                icon: <UserPlus className="h-8 w-8 text-orange-500" />
               },
               {
                 step: "02",
-                title: "Set Your Goals",
-                description: "Define your productivity targets and let our AI create a personalized plan",
-                icon: <Target className="h-8 w-8 text-orange-500" />
+                title: "Customize Your Strategy",
+                description: "Set up your Postify profile based on your personal goals — whether it's visibility, engagement, or growth.",
+                icon: <Settings className="h-8 w-8 text-orange-500" />
               },
               {
                 step: "03",
-                title: "Track & Optimize",
-                description: "Monitor your progress with real-time analytics and automated insights",
-                icon: <BarChart3 className="h-8 w-8 text-orange-500" />
+                title: "Activate Growth Mode",
+                description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
+                icon: <Rocket className="h-8 w-8 text-orange-500" />
               }
             ].map((item, index) => (
               <div key={index} className="text-center">
