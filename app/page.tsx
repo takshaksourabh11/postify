@@ -417,7 +417,7 @@ export default function Home() {
               </div>
 
               {/* Right side - Visual */}
-              <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center mt-16">
                 <div className="w-80 h-80 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center relative overflow-hidden">
                   {/* Puzzle piece visual for step 1 */}
                   {activeStep === 1 && (
