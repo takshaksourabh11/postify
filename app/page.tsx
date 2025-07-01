@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket } from 'lucide-react';
+import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket, MessageSquare, Calendar, Repeat, FileText, Brain, Chrome } from 'lucide-react';
 import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
 
 export default function Home() {
@@ -37,15 +37,6 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
   };
 
-  // Static heatmap pattern - no more random generation
-  const heatmapPattern = [
-    'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500',
-    'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-gray-100', 'bg-orange-500', 'bg-orange-100',
-    'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-300',
-    'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500',
-    'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
-  ];
-
   const steps = [
     {
       number: 1,
@@ -65,6 +56,15 @@ export default function Home() {
       description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
       icon: <Rocket className="h-8 w-8 text-orange-500" />
     }
+  ];
+
+  // Static heatmap pattern - no more random generation
+  const heatmapPattern = [
+    'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500',
+    'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-gray-100', 'bg-orange-500', 'bg-orange-100',
+    'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-300',
+    'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500',
+    'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
   ];
 
   return (
@@ -458,59 +458,159 @@ export default function Home() {
       </section>
 
       {/* Feature Toolkit Section */}
-      <section id="features" className="py-20 bg-gray-50">
+      <section id="features" className="py-20 bg-[#F5F5F5]">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              All-in-One Toolkit for Success
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need to boost productivity and achieve your goals
-            </p>
+          {/* Header */}
+          <div className="mb-16">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-lg text-gray-600 mb-2 font-medium">Key Features</p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                  All-in-One Toolkit for X/LinkedIn Success
+                </h2>
+              </div>
+              <Button variant="ghost" className="text-orange-500 hover:text-orange-600 font-medium">
+                View All <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Smart Analytics",
-                description: "Get detailed insights into your productivity patterns with AI-powered analytics and personalized recommendations.",
-                icon: <BarChart3 className="h-8 w-8 text-orange-500" />,
-                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-              },
-              {
-                title: "Goal Tracking",
-                description: "Set, monitor, and achieve your objectives with our intuitive goal-setting framework and progress visualization.",
-                icon: <Target className="h-8 w-8 text-orange-500" />,
-                image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-              },
-              {
-                title: "Team Collaboration",
-                description: "Work seamlessly with your team through shared dashboards, real-time updates, and collaborative features.",
-                icon: <Users className="h-8 w-8 text-orange-500" />,
-                image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
-              }
-            ].map((feature, index) => (
-              <Card key={index} className="group hover:shadow-lg transition-shadow duration-300 border-0 bg-white">
-                <CardHeader className="pb-4">
-                  <div className="w-full h-48 bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                    <img 
-                      src={feature.image} 
-                      alt={feature.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Feature 1: AI Templates */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-white" />
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
-                      {feature.icon}
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Customized AI Templates & Instant Replies
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Save time with customizable, profile-specific AI post templates and one-click quick replies.
+              </p>
+            </div>
+
+            {/* Feature 2: Analytics Dashboard */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-full h-32 bg-gray-50 rounded-xl flex items-center justify-center mb-4 relative overflow-hidden">
+                  {/* Mini chart visualization */}
+                  <div className="w-full h-full relative">
+                    <div className="absolute top-4 left-4 text-xs font-semibold text-gray-900">$890.93</div>
+                    <div className="absolute top-4 right-4 text-xs text-gray-500">1.8K</div>
+                    <div className="absolute bottom-4 right-4 text-xs text-gray-500">0.9k</div>
+                    
+                    {/* Chart bars */}
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-end space-x-1">
+                      {[20, 35, 25, 45, 30, 40, 35, 50, 25, 30].map((height, i) => (
+                        <div
+                          key={i}
+                          className={`w-2 rounded-sm ${i === 4 ? 'bg-orange-500' : 'bg-gray-300'}`}
+                          style={{ height: `${height}px` }}
+                        />
+                      ))}
                     </div>
-                    <CardTitle className="text-xl text-gray-900">{feature.title}</CardTitle>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Advanced Analytics Dashboard
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Monitor your X and LinkedIn performance in real time—track engagement, uncover trends, and spot growth opportunities.
+              </p>
+            </div>
+
+            {/* Feature 3: Multi-Profile Management */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-full h-32 bg-gray-50 rounded-xl flex items-center justify-center mb-4 relative">
+                  {/* Profile circles */}
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                      <Users className="h-6 w-6 text-white" />
+                    </div>
+                    {/* Surrounding profile indicators */}
+                    <div className="absolute -top-2 -left-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                    <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                    <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Multi-Profile Management
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Effortlessly manage multiple Twitter and LinkedIn accounts—switch between them seamlessly and stay organized.
+              </p>
+            </div>
+
+            {/* Feature 4: AI Post Ideas */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                AI-powered Post Ideas & Rewrites
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Generate content suggestions, fresh tweet ideas, and profile-aligned post rewrites in seconds.
+              </p>
+            </div>
+
+            {/* Feature 5: Smart Scheduler */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-white" />
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Smart Social Media Scheduler
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Plan, schedule, and publish compelling content using a creator-focused scheduling tool.
+              </p>
+            </div>
+
+            {/* Feature 6: Browser Support */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="mb-6">
+                <div className="w-full h-32 bg-gray-50 rounded-xl flex items-center justify-center mb-4 relative">
+                  {/* Browser icons container */}
+                  <div className="flex items-center space-x-3 bg-white rounded-full px-4 py-2 shadow-sm">
+                    <Chrome className="h-6 w-6 text-blue-500" />
+                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">O</span>
+                    </div>
+                    <div className="w-6 h-6 bg-blue-600 rounded-sm flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">f</span>
+                    </div>
+                    <div className="w-6 h-6 bg-orange-500 rounded-sm flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">Fx</span>
+                    </div>
+                    <div className="text-orange-500 text-sm font-bold">7+</div>
+                  </div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Automated Engagement Boosters
+              </h3>
+              <p className="text-gray-600 text-sm leading-relaxed">
+                Amplify your reach with auto-retweets and intelligent AI-generated reply messages.
+              </p>
+            </div>
           </div>
         </div>
       </section>
