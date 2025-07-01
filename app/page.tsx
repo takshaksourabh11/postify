@@ -12,6 +12,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showLinkedIn, setShowLinkedIn] = useState(false);
+  const [activeStep, setActiveStep] = useState(1);
 
   // Toggle between X and LinkedIn logos every 3 seconds
   useEffect(() => {
@@ -45,8 +46,32 @@ export default function Home() {
     'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
   ];
 
+  const steps = [
+    {
+      number: 1,
+      title: "Connect Your Account",
+      description: "Link your X or LinkedIn account to Postify in just a click and get ready to automate your content game.",
+      icon: <UserPlus className="h-12 w-12 text-orange-500" />,
+      details: "Get started by installing the Twitter CRM extension in just one click. It's lightweight, secure, and seamlessly integrates with your Twitter interface."
+    },
+    {
+      number: 2,
+      title: "Customize Your Strategy",
+      description: "Set up your Postify profile based on your personal goals — whether it's visibility, engagement, or growth.",
+      icon: <Settings className="h-12 w-12 text-orange-500" />,
+      details: "Configure your content strategy, set posting schedules, and define your target audience to maximize engagement and reach."
+    },
+    {
+      number: 3,
+      title: "Activate Growth Mode",
+      description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
+      icon: <Rocket className="h-12 w-12 text-orange-500" />,
+      details: "Launch your automated content strategy and watch your social media presence grow with AI-powered insights and optimization."
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F5F5F5]">
       {/* Header Navigation */}
       <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
         <div className="bg-white/95 backdrop-blur-md border border-gray-200 rounded-2xl px-6 py-3 shadow-lg">
@@ -339,52 +364,109 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section className="py-20 bg-white">
+      {/* Interactive How it Works Section */}
+      <section className="py-20 bg-[#F5F5F5]">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <p className="text-lg text-gray-600 mb-4 font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
+              In 3 Simple Steps
+            </p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               How it Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Get started in minutes with our simple three-step process
-            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Connect Your Account",
-                description: "Link your X or LinkedIn account to Postify in just a click and get ready to automate your content game.",
-                icon: <UserPlus className="h-8 w-8 text-orange-500" />
-              },
-              {
-                step: "02",
-                title: "Customize Your Strategy",
-                description: "Set up your Postify profile based on your personal goals — whether it's visibility, engagement, or growth.",
-                icon: <Settings className="h-8 w-8 text-orange-500" />
-              },
-              {
-                step: "03",
-                title: "Activate Growth Mode",
-                description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
-                icon: <Rocket className="h-8 w-8 text-orange-500" />
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    {item.icon}
+          {/* Interactive Steps Container */}
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-white rounded-xl p-8 shadow-lg">
+              {/* Step Navigation */}
+              <div className="flex justify-center mb-12">
+                <div className="flex space-x-8">
+                  {steps.map((step) => (
+                    <button
+                      key={step.number}
+                      onClick={() => setActiveStep(step.number)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+                        activeStep === step.number
+                          ? 'bg-orange-500 text-white shadow-lg scale-110'
+                          : 'border-2 border-gray-300 text-gray-500 hover:border-orange-300 hover:text-orange-500'
+                      }`}
+                      aria-label={`Step ${step.number}: ${step.title}`}
+                    >
+                      {step.number}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Step Content */}
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                {/* Left side - Content */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 bg-orange-100 rounded-xl">
+                      {steps[activeStep - 1].icon}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        {steps[activeStep - 1].title}
+                      </h3>
+                    </div>
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                    {item.step}
+                  
+                  <p className="text-lg text-gray-600 leading-relaxed">
+                    {steps[activeStep - 1].description}
+                  </p>
+                  
+                  <p className="text-gray-500">
+                    {steps[activeStep - 1].details}
+                  </p>
+
+                  {activeStep === 1 && (
+                    <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium">
+                      Install <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {/* Right side - Visual */}
+                <div className="flex justify-center">
+                  <div className="w-64 h-64 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center">
+                    {/* Puzzle piece visual for step 1 */}
+                    {activeStep === 1 && (
+                      <div className="w-32 h-32 bg-orange-500 rounded-2xl relative">
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
+                        <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full"></div>
+                        <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                    
+                    {/* Settings gear visual for step 2 */}
+                    {activeStep === 2 && (
+                      <div className="relative">
+                        <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center">
+                          <Settings className="h-12 w-12 text-white animate-spin" style={{ animationDuration: '3s' }} />
+                        </div>
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-300 rounded-full"></div>
+                        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                      </div>
+                    )}
+                    
+                    {/* Rocket visual for step 3 */}
+                    {activeStep === 3 && (
+                      <div className="relative">
+                        <div className="w-20 h-32 bg-orange-500 rounded-t-full rounded-b-lg flex items-center justify-center">
+                          <Rocket className="h-16 w-16 text-white" />
+                        </div>
+                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-300 rounded-full animate-pulse"></div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-orange-200 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
