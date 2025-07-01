@@ -51,22 +51,19 @@ export default function Home() {
       number: 1,
       title: "Connect Your Account",
       description: "Link your X or LinkedIn account to Postify in just a click and get ready to automate your content game.",
-      icon: <UserPlus className="h-12 w-12 text-orange-500" />,
-      details: "Get started by installing the Twitter CRM extension in just one click. It's lightweight, secure, and seamlessly integrates with your Twitter interface."
+      icon: <UserPlus className="h-8 w-8 text-orange-500" />
     },
     {
       number: 2,
       title: "Customize Your Strategy",
       description: "Set up your Postify profile based on your personal goals — whether it's visibility, engagement, or growth.",
-      icon: <Settings className="h-12 w-12 text-orange-500" />,
-      details: "Configure your content strategy, set posting schedules, and define your target audience to maximize engagement and reach."
+      icon: <Settings className="h-8 w-8 text-orange-500" />
     },
     {
       number: 3,
       title: "Activate Growth Mode",
       description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
-      icon: <Rocket className="h-12 w-12 text-orange-500" />,
-      details: "Launch your automated content strategy and watch your social media presence grow with AI-powered insights and optimization."
+      icon: <Rocket className="h-8 w-8 text-orange-500" />
     }
   ];
 
@@ -378,92 +375,81 @@ export default function Home() {
 
           {/* Interactive Steps Container */}
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              {/* Step Navigation */}
-              <div className="flex justify-center mb-12">
-                <div className="flex space-x-8">
-                  {steps.map((step) => (
-                    <button
-                      key={step.number}
-                      onClick={() => setActiveStep(step.number)}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
+            <div className="bg-white rounded-xl p-8 shadow-lg grid md:grid-cols-2 gap-12 items-start">
+              {/* Left side - Vertical Step Navigation */}
+              <div className="space-y-6">
+                {steps.map((step) => (
+                  <div
+                    key={step.number}
+                    className={`flex items-start space-x-4 p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                      activeStep === step.number
+                        ? 'bg-orange-50 border-l-4 border-orange-500'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => setActiveStep(step.number)}
+                  >
+                    {/* Step Number */}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 flex-shrink-0 ${
                         activeStep === step.number
-                          ? 'bg-orange-500 text-white shadow-lg scale-110'
-                          : 'border-2 border-gray-300 text-gray-500 hover:border-orange-300 hover:text-orange-500'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-gray-200 text-gray-600'
                       }`}
-                      aria-label={`Step ${step.number}: ${step.title}`}
                     >
                       {step.number}
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                    
+                    {/* Step Content */}
+                    <div className="flex-1">
+                      <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
+                        activeStep === step.number ? 'text-gray-900' : 'text-gray-700'
+                      }`}>
+                        {step.title}
+                      </h3>
+                      <p className={`text-sm transition-colors duration-300 ${
+                        activeStep === step.number ? 'text-gray-600' : 'text-gray-500'
+                      }`}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Step Content */}
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                {/* Left side - Content */}
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 bg-orange-100 rounded-xl">
-                      {steps[activeStep - 1].icon}
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">
-                        {steps[activeStep - 1].title}
-                      </h3>
-                    </div>
-                  </div>
-                  
-                  <p className="text-lg text-gray-600 leading-relaxed">
-                    {steps[activeStep - 1].description}
-                  </p>
-                  
-                  <p className="text-gray-500">
-                    {steps[activeStep - 1].details}
-                  </p>
-
+              {/* Right side - Visual */}
+              <div className="flex justify-center items-center">
+                <div className="w-80 h-80 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                  {/* Puzzle piece visual for step 1 */}
                   {activeStep === 1 && (
-                    <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium">
-                      Install <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    <div className="w-32 h-32 bg-orange-500 rounded-2xl relative transition-all duration-500 ease-in-out">
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
+                      <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
+                      <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full"></div>
+                      <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full"></div>
+                    </div>
                   )}
-                </div>
-
-                {/* Right side - Visual */}
-                <div className="flex justify-center">
-                  <div className="w-64 h-64 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center">
-                    {/* Puzzle piece visual for step 1 */}
-                    {activeStep === 1 && (
-                      <div className="w-32 h-32 bg-orange-500 rounded-2xl relative">
-                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
-                        <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-orange-500 rounded-full"></div>
-                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white rounded-full"></div>
-                        <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-white rounded-full"></div>
+                  
+                  {/* Settings gear visual for step 2 */}
+                  {activeStep === 2 && (
+                    <div className="relative transition-all duration-500 ease-in-out">
+                      <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center">
+                        <Settings className="h-12 w-12 text-white animate-spin" style={{ animationDuration: '3s' }} />
                       </div>
-                    )}
-                    
-                    {/* Settings gear visual for step 2 */}
-                    {activeStep === 2 && (
-                      <div className="relative">
-                        <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center">
-                          <Settings className="h-12 w-12 text-white animate-spin" style={{ animationDuration: '3s' }} />
-                        </div>
-                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-300 rounded-full"></div>
-                        <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-300 rounded-full"></div>
+                      <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-orange-300 rounded-full"></div>
+                    </div>
+                  )}
+                  
+                  {/* Rocket visual for step 3 */}
+                  {activeStep === 3 && (
+                    <div className="relative transition-all duration-500 ease-in-out">
+                      <div className="w-20 h-32 bg-orange-500 rounded-t-full rounded-b-lg flex items-center justify-center">
+                        <Rocket className="h-16 w-16 text-white" />
                       </div>
-                    )}
-                    
-                    {/* Rocket visual for step 3 */}
-                    {activeStep === 3 && (
-                      <div className="relative">
-                        <div className="w-20 h-32 bg-orange-500 rounded-t-full rounded-b-lg flex items-center justify-center">
-                          <Rocket className="h-16 w-16 text-white" />
-                        </div>
-                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-300 rounded-full animate-pulse"></div>
-                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-orange-200 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                      </div>
-                    )}
-                  </div>
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-orange-300 rounded-full animate-pulse"></div>
+                      <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-orange-200 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
