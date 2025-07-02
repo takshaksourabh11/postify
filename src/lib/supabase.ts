@@ -4,7 +4,12 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
+}
+
+// Check for placeholder values
+if (supabaseUrl.includes('placeholder') || supabaseAnonKey.includes('placeholder')) {
+  console.warn('⚠️  Using placeholder Supabase credentials. Please update .env.local with your actual Supabase project credentials.')
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
