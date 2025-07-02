@@ -57,7 +57,7 @@ export default function Home() {
     {
       number: 1,
       title: "Connect Your Account",
-      description: "Link your X or LinkedIn account to Postify in just a click and get ready to automate your content game.",
+      description: "Link your LinkedIn or X (Twitter) account to Postify in just a click and get ready to automate your content game.",
       icon: <UserPlus className="h-8 w-8 text-orange-500" />
     },
     {
@@ -69,7 +69,7 @@ export default function Home() {
     {
       number: 3,
       title: "Activate Growth Mode",
-      description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
+      description: "You're all set! Start exploring Postify's full toolkit and turn your LinkedIn or X presence into a growth engine.",
       icon: <Rocket className="h-8 w-8 text-orange-500" />
     }
   ]
@@ -402,7 +402,7 @@ export default function Home() {
               In 3 Simple Steps
             </p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              How it Works
+              Master X Management
             </h2>
           </div>
 
@@ -766,10 +766,10 @@ export default function Home() {
             <div className="mb-8 lg:mb-0">
               <div className="flex items-center space-x-2 mb-4">
                 <Star className="h-8 w-8 text-white" />
-                <span className="text-xl font-bold">ProductiveX</span>
+                <span className="text-xl font-bold">Postify</span>
               </div>
               <p className="text-gray-400 mb-6 max-w-md">
-                Transform your productivity with AI-powered insights and smart automation.
+                Transform your social media presence with AI-powered content automation and smart scheduling.
               </p>
               
               {/* Company Links */}
@@ -806,7 +806,7 @@ export default function Home() {
           {/* Bottom section */}
           <div className="border-t border-gray-800 mt-12 pt-8 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 ProductiveX. All rights reserved. Made with ❤️ for productive people.
+              © 2024 Postify. All rights reserved. Made with ❤️ for content creators.
             </p>
           </div>
         </div>
