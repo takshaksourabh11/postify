@@ -1,47 +1,57 @@
-"use client";
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket, MessageSquare, Calendar, Repeat, FileText, Brain, Chrome } from 'lucide-react';
-import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
-import { Features } from '@/components/ui/features-8';
-import { AuthModal } from '@/components/ui/auth-modal';
+import { useState, useEffect } from 'react'
+import { Button } from '../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Badge } from '../components/ui/badge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion'
+import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket, MessageSquare, Calendar, Repeat, FileText, Brain, Chrome } from 'lucide-react'
+import { XIcon, LinkedInIcon } from '../components/ui/social-icons'
+import { Features } from '../components/ui/features-8'
+import { AuthModal } from '../components/ui/auth-modal'
+import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function Home() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [showLinkedIn, setShowLinkedIn] = useState(false);
-  const [activeStep, setActiveStep] = useState(1);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [showLinkedIn, setShowLinkedIn] = useState(false)
+  const [activeStep, setActiveStep] = useState(1)
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'signup' | 'signin' }>({
     isOpen: false,
     mode: 'signup'
-  });
+  })
+
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   // Toggle between X and LinkedIn logos every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setShowLinkedIn(prev => !prev);
-    }, 3000);
+      setShowLinkedIn(prev => !prev)
+    }, 3000)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
+
+  // Redirect to dashboard if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard')
+    }
+  }, [user, navigate])
 
   const carouselItems = [
     { title: "Boost Productivity", description: "Increase your daily output by 300%" },
     { title: "Smart Analytics", description: "Track and optimize your performance" },
     { title: "Team Collaboration", description: "Work seamlessly with your team" }
-  ];
+  ]
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-  };
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length)
+  }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
-  };
+    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length)
+  }
 
   const steps = [
     {
@@ -62,7 +72,7 @@ export default function Home() {
       description: "You're all set! Start exploring Postify's full toolkit and turn your X and LinkedIn into a growth engine.",
       icon: <Rocket className="h-8 w-8 text-orange-500" />
     }
-  ];
+  ]
 
   // Static heatmap pattern - no more random generation
   const heatmapPattern = [
@@ -71,21 +81,21 @@ export default function Home() {
     'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-300',
     'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-500', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500',
     'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
-  ];
+  ]
 
   /**
    * Handle opening authentication modal
    */
   const handleAuthClick = (mode: 'signup' | 'signin') => {
-    setAuthModal({ isOpen: true, mode });
-  };
+    setAuthModal({ isOpen: true, mode })
+  }
 
   /**
    * Handle closing authentication modal
    */
   const handleAuthClose = () => {
-    setAuthModal({ isOpen: false, mode: 'signup' });
-  };
+    setAuthModal({ isOpen: false, mode: 'signup' })
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -809,5 +819,5 @@ export default function Home() {
         mode={authModal.mode}
       />
     </div>
-  );
+  )
 }

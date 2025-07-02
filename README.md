@@ -1,253 +1,262 @@
-# Postify Authentication System
+# Postify - React + Supabase
 
-A complete user authentication system with social media login for X (Twitter) and LinkedIn, built with Next.js, NextAuth.js, and modern security practices.
+A modern social media management platform built with React, Vite, and Supabase. Automate your X (Twitter) and LinkedIn content with AI-powered tools.
 
 ## 🚀 Features
 
 ### ✨ **Authentication**
 - **OAuth2.0 Social Login** - Twitter/X and LinkedIn integration
-- **Secure Session Management** - JWT-based stateless sessions
-- **Permission-based Access** - Granular permission system
+- **Supabase Auth** - Secure, scalable authentication
 - **Modern UI/UX** - Beautiful modal-based authentication flow
 
 ### 🔒 **Security**
-- **Industry Standards** - OAuth2.0 compliance
-- **Encrypted Sessions** - Secure JWT tokens
-- **CSRF Protection** - Built-in security measures
-- **Data Privacy** - No password storage, OAuth-only
+- **Row Level Security (RLS)** - Database-level security
+- **OAuth2.0 Standards** - Industry-standard security
+- **Encrypted Sessions** - Secure session management
 
 ### 📊 **Database Integration**
+- **Supabase Database** - PostgreSQL with real-time features
 - **User Management** - Complete user lifecycle
-- **Account Linking** - Multiple OAuth providers per user
-- **Session Tracking** - Secure session management
-- **Data Relationships** - Posts, analytics, and user preferences
+- **Post Management** - Content creation and scheduling
+- **Analytics Tracking** - Performance metrics
 
 ## 🛠️ Installation & Setup
 
-### 1. **Install Dependencies**
+### 1. **Clone and Install**
 ```bash
-npm install next-auth jose bcryptjs jsonwebtoken
-npm install @types/bcryptjs @types/jsonwebtoken
+git clone <repository-url>
+cd postify-react
+npm install
 ```
 
-### 2. **Environment Configuration**
-Create `.env.local` file with your OAuth credentials:
+### 2. **Supabase Setup**
+
+#### Create a Supabase Project
+1. Go to [Supabase](https://supabase.com)
+2. Create a new project
+3. Wait for the database to be ready
+
+#### Configure Authentication Providers
+
+**Twitter/X Setup:**
+1. Go to your Supabase project dashboard
+2. Navigate to Authentication > Providers
+3. Enable Twitter provider
+4. Add your Twitter OAuth credentials:
+   - Client ID: `your_twitter_client_id`
+   - Client Secret: `your_twitter_client_secret`
+5. Add redirect URL: `https://your-project-ref.supabase.co/auth/v1/callback`
+
+**LinkedIn Setup:**
+1. In the same Providers section
+2. Enable LinkedIn (OIDC) provider
+3. Add your LinkedIn OAuth credentials:
+   - Client ID: `your_linkedin_client_id`
+   - Client Secret: `your_linkedin_client_secret`
+4. Add redirect URL: `https://your-project-ref.supabase.co/auth/v1/callback`
+
+#### Run Database Migrations
+1. Install Supabase CLI:
+```bash
+npm install -g supabase
+```
+
+2. Initialize Supabase in your project:
+```bash
+supabase init
+```
+
+3. Link to your project:
+```bash
+supabase link --project-ref your-project-ref
+```
+
+4. Run migrations:
+```bash
+supabase db push
+```
+
+### 3. **Environment Configuration**
+Create `.env.local` file:
 
 ```env
-# NextAuth.js Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-super-secret-key-here
-
-# Twitter OAuth2.0 Credentials
-TWITTER_CLIENT_ID=your-twitter-client-id
-TWITTER_CLIENT_SECRET=your-twitter-client-secret
-
-# LinkedIn OAuth2.0 Credentials
-LINKEDIN_CLIENT_ID=your-linkedin-client-id
-LINKEDIN_CLIENT_SECRET=your-linkedin-client-secret
-
-# Database URL
-DATABASE_URL=postgresql://username:password@localhost:5432/postify
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 3. **OAuth Provider Setup**
+### 4. **OAuth Provider Setup**
 
-#### **Twitter/X Setup:**
+#### **Twitter/X Developer Setup:**
 1. Go to [Twitter Developer Portal](https://developer.twitter.com/en/portal/dashboard)
 2. Create a new app or use existing one
 3. Enable OAuth2.0 with PKCE
-4. Add callback URL: `http://localhost:3000/api/auth/callback/twitter`
-5. Copy Client ID and Client Secret
+4. Add callback URL: `https://your-project-ref.supabase.co/auth/v1/callback`
+5. Set scopes: `tweet.read users.read follows.read offline.access`
 
-#### **LinkedIn Setup:**
+#### **LinkedIn Developer Setup:**
 1. Go to [LinkedIn Developers](https://www.linkedin.com/developers/apps)
 2. Create a new app
-3. Add "Sign In with LinkedIn" product
-4. Add callback URL: `http://localhost:3000/api/auth/callback/linkedin`
-5. Copy Client ID and Client Secret
+3. Add "Sign In with LinkedIn using OpenID Connect" product
+4. Add callback URL: `https://your-project-ref.supabase.co/auth/v1/callback`
+5. Set scopes: `openid profile email`
 
-### 4. **Database Setup**
-Use the provided SQL schema in `lib/database.ts` to create your database tables:
-
-```sql
--- Run the SQL_SCHEMA from lib/database.ts
--- This creates users, accounts, sessions, and posts tables
+### 5. **Start Development Server**
+```bash
+npm run dev
 ```
 
-## 📁 **File Structure**
+## 📁 **Project Structure**
 
 ```
-├── components/ui/
-│   └── auth-modal.tsx          # Authentication modal component
+src/
+├── components/
+│   ├── ui/                 # Reusable UI components
+│   │   ├── auth-modal.tsx  # Authentication modal
+│   │   ├── button.tsx      # Button component
+│   │   ├── card.tsx        # Card component
+│   │   └── ...
+│   └── ProtectedRoute.tsx  # Route protection
+├── contexts/
+│   └── AuthContext.tsx     # Authentication context
 ├── lib/
-│   ├── auth.ts                 # NextAuth.js configuration
-│   └── database.ts             # Database operations and schema
-├── app/api/auth/
-│   ├── [...nextauth]/route.ts  # NextAuth.js API routes
-│   └── user/route.ts           # User management API
-├── hooks/
-│   └── use-auth.ts             # Authentication hook
-├── middleware.ts               # Route protection middleware
-└── .env.local                  # Environment variables
+│   ├── supabase.ts         # Supabase client and operations
+│   └── utils.ts            # Utility functions
+├── pages/
+│   ├── Home.tsx            # Landing page
+│   └── Dashboard.tsx       # User dashboard
+├── App.tsx                 # Main app component
+├── main.tsx               # App entry point
+└── index.css              # Global styles
+
+supabase/
+└── migrations/
+    └── 001_initial_schema.sql  # Database schema
 ```
 
 ## 🎯 **Usage Examples**
 
-### **Basic Authentication**
+### **Authentication**
 ```tsx
-import { AuthModal } from '@/components/ui/auth-modal';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from './contexts/AuthContext'
 
 function MyComponent() {
-  const { user, isAuthenticated, login, logout } = useAuth();
-  const [authModal, setAuthModal] = useState({ isOpen: false, mode: 'signup' });
+  const { user, signInWithProvider, signOut } = useAuth()
+
+  const handleLogin = async () => {
+    await signInWithProvider('twitter')
+  }
 
   return (
     <div>
-      {isAuthenticated ? (
-        <div>Welcome, {user?.name}!</div>
+      {user ? (
+        <div>Welcome, {user.user_metadata?.name}!</div>
       ) : (
-        <Button onClick={() => setAuthModal({ isOpen: true, mode: 'signup' })}>
-          Sign Up
-        </Button>
+        <button onClick={handleLogin}>Sign in with Twitter</button>
       )}
-      
-      <AuthModal 
-        isOpen={authModal.isOpen}
-        onClose={() => setAuthModal({ isOpen: false, mode: 'signup' })}
-        mode={authModal.mode}
-      />
     </div>
-  );
+  )
 }
 ```
 
-### **Protected Routes**
+### **Database Operations**
 ```tsx
-// middleware.ts automatically protects routes
-// Add routes to config.matcher to require authentication
+import { DatabaseOperations } from './lib/supabase'
 
-export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/premium/:path*',
-    '/api/protected/:path*'
-  ]
-};
-```
+// Create a post
+const post = await DatabaseOperations.createPost({
+  user_id: user.id,
+  content: 'Hello, world!',
+  platform: 'twitter',
+  status: 'published'
+})
 
-### **API Usage**
-```tsx
-// Get current user
-const response = await fetch('/api/auth/user');
-const { user } = await response.json();
-
-// Update user preferences
-await fetch('/api/auth/user', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ 
-    preferences: { theme: 'dark', notifications: true }
-  })
-});
+// Get user posts
+const posts = await DatabaseOperations.getUserPosts(user.id)
 ```
 
 ## 🔐 **Security Features**
 
+### **Row Level Security (RLS)**
+- ✅ Users can only access their own data
+- ✅ Automatic policy enforcement
+- ✅ Database-level security
+
 ### **OAuth2.0 Compliance**
 - ✅ PKCE (Proof Key for Code Exchange)
-- ✅ State parameter validation
 - ✅ Secure redirect handling
 - ✅ Token refresh management
-
-### **Session Security**
-- ✅ JWT with secure signing
-- ✅ HttpOnly cookies
-- ✅ CSRF protection
-- ✅ Session expiration
 
 ### **Data Protection**
 - ✅ No password storage
 - ✅ Encrypted access tokens
 - ✅ Secure database operations
-- ✅ Input validation
 
 ## 📊 **Database Schema**
 
 ### **Users Table**
 ```sql
 CREATE TABLE users (
-  id VARCHAR(255) PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  image TEXT,
-  plan_type ENUM('free', 'premium') DEFAULT 'free',
-  preferences JSON,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id uuid PRIMARY KEY REFERENCES auth.users(id),
+  email text UNIQUE NOT NULL,
+  name text NOT NULL,
+  avatar_url text,
+  plan_type plan_type DEFAULT 'free',
+  preferences jsonb,
+  created_at timestamptz DEFAULT now()
 );
 ```
 
-### **Accounts Table (OAuth)**
+### **Posts Table**
 ```sql
-CREATE TABLE accounts (
-  id VARCHAR(255) PRIMARY KEY,
-  user_id VARCHAR(255) NOT NULL,
-  provider VARCHAR(255) NOT NULL,
-  provider_account_id VARCHAR(255) NOT NULL,
-  access_token TEXT,
-  refresh_token TEXT,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id),
+  content text NOT NULL,
+  platform platform_type NOT NULL,
+  status post_status DEFAULT 'draft',
+  engagement jsonb,
+  created_at timestamptz DEFAULT now()
 );
 ```
 
 ## 🚀 **Deployment**
 
-### **Environment Variables**
-Set these in your production environment:
-- `NEXTAUTH_URL` - Your production domain
-- `NEXTAUTH_SECRET` - Strong random secret
-- OAuth credentials for each provider
-- Database connection string
+### **Build for Production**
+```bash
+npm run build
+```
 
-### **OAuth Callback URLs**
+### **Deploy to Netlify/Vercel**
+1. Connect your repository
+2. Set environment variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+3. Deploy!
+
+### **Update OAuth Callback URLs**
 Update your OAuth apps with production URLs:
-- Twitter: `https://yourdomain.com/api/auth/callback/twitter`
-- LinkedIn: `https://yourdomain.com/api/auth/callback/linkedin`
+- Twitter: `https://your-project-ref.supabase.co/auth/v1/callback`
+- LinkedIn: `https://your-project-ref.supabase.co/auth/v1/callback`
 
 ## 🔧 **Customization**
 
-### **Adding New Providers**
-```tsx
-// In lib/auth.ts
-import GoogleProvider from 'next-auth/providers/google';
+### **Adding New Features**
+1. Create new components in `src/components/`
+2. Add database operations in `src/lib/supabase.ts`
+3. Update database schema with new migrations
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    // ... existing providers
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
-};
-```
-
-### **Custom Permission System**
-```tsx
-// In hooks/use-auth.ts
-const hasPermission = useCallback((permission: string) => {
-  const userRoles = session?.user?.roles || [];
-  return userRoles.includes(permission);
-}, [session]);
-```
+### **Styling**
+- Uses Tailwind CSS for styling
+- Customize theme in `tailwind.config.ts`
+- Add custom styles in `src/index.css`
 
 ## 📈 **Analytics & Monitoring**
 
-The system includes built-in event tracking:
-- User sign-in/sign-out events
-- Authentication errors
-- Session management
-- API usage metrics
+The system includes built-in tracking for:
+- User authentication events
+- Post creation and engagement
+- Platform usage metrics
+- Performance analytics
 
 ## 🆘 **Troubleshooting**
 
@@ -255,38 +264,26 @@ The system includes built-in event tracking:
 
 1. **OAuth Redirect Mismatch**
    - Ensure callback URLs match exactly in OAuth app settings
-   - Check NEXTAUTH_URL environment variable
+   - Check Supabase project URL
 
-2. **Session Not Persisting**
-   - Verify NEXTAUTH_SECRET is set
-   - Check cookie settings in production
+2. **Database Connection**
+   - Verify environment variables
+   - Check Supabase project status
 
-3. **Database Connection**
-   - Verify DATABASE_URL format
-   - Ensure database tables exist
+3. **Authentication Errors**
+   - Verify OAuth credentials
+   - Check provider configuration in Supabase
 
 ### **Debug Mode**
-Enable debug logging in development:
+Enable debug logging:
 ```tsx
-// In lib/auth.ts
-export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development',
-  // ... other options
-};
+// In src/lib/supabase.ts
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    debug: true // Enable in development
+  }
+})
 ```
-
-## 📚 **API Reference**
-
-### **Authentication Endpoints**
-- `GET /api/auth/signin` - Sign in page
-- `POST /api/auth/signin/:provider` - Initiate OAuth flow
-- `GET /api/auth/callback/:provider` - OAuth callback
-- `POST /api/auth/signout` - Sign out
-
-### **User Management**
-- `GET /api/auth/user` - Get current user
-- `PUT /api/auth/user` - Update user
-- `DELETE /api/auth/user` - Delete account
 
 ## 🤝 **Contributing**
 
@@ -302,4 +299,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Built with ❤️ using Next.js, NextAuth.js, and modern web standards.**
+**Built with ❤️ using React, Vite, Supabase, and modern web standards.**
