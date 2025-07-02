@@ -1,4 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from './card.tsx'
 import { FileText, BarChart3, Users, Lightbulb, Calendar, Repeat } from 'lucide-react'
 
 export function Features() {

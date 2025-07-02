@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog'
-import { Button } from './button'
-import { Badge } from './badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog.tsx'
+import { Button } from './button.tsx'
+import { Badge } from './badge.tsx'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   Shield, 
