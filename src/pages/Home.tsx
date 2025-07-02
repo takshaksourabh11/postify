@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket, MessageSquare, Calendar, Repeat, FileText, Brain, Chrome } from 'lucide-react';
-import { XIcon, LinkedInIcon } from '../components/ui/social-icons';
-import { Features } from '../components/ui/features-8';
-import { AuthModal } from '../components/ui/auth-modal';
+import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
+import { Features } from '@/components/ui/features-8';
+import { AuthModal } from '@/components/ui/auth-modal';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
