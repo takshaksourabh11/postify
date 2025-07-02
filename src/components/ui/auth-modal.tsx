@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog'
-import { Button } from './button'
-import { Badge } from './badge'
-import { useAuth } from '../../contexts/AuthContext'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/contexts/AuthContext'
 import { 
   Shield, 
   Users, 
