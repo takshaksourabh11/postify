@@ -8,12 +8,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Menu, X, Star, Play, ArrowRight, ChevronLeft, ChevronRight, Target, BarChart3, Users, Check, Globe, Award, Shield, Lightbulb, TrendingUp, Puzzle, Zap, Twitter, Facebook, Instagram, Linkedin, UserPlus, Settings, Rocket, MessageSquare, Calendar, Repeat, FileText, Brain, Chrome } from 'lucide-react';
 import { XIcon, LinkedInIcon } from '@/components/ui/social-icons';
 import { Features } from '@/components/ui/features-8';
+import { AuthModal } from '@/components/ui/auth-modal';
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showLinkedIn, setShowLinkedIn] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
+  const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'signup' | 'signin' }>({
+    isOpen: false,
+    mode: 'signup'
+  });
 
   // Toggle between X and LinkedIn logos every 3 seconds
   useEffect(() => {
@@ -68,6 +73,20 @@ export default function Home() {
     'bg-orange-300', 'bg-orange-100', 'bg-gray-100', 'bg-orange-500', 'bg-orange-300', 'bg-orange-100', 'bg-orange-500'
   ];
 
+  /**
+   * Handle opening authentication modal
+   */
+  const handleAuthClick = (mode: 'signup' | 'signin') => {
+    setAuthModal({ isOpen: true, mode });
+  };
+
+  /**
+   * Handle closing authentication modal
+   */
+  const handleAuthClose = () => {
+    setAuthModal({ isOpen: false, mode: 'signup' });
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
       {/* Header Navigation */}
@@ -96,6 +115,7 @@ export default function Home() {
             {/* CTA Button */}
             <div className="hidden md:flex">
               <Button 
+                onClick={() => handleAuthClick('signup')}
                 className="relative bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full font-medium text-sm h-8 transition-all duration-300 group overflow-hidden"
                 style={{
                   boxShadow: `
@@ -149,6 +169,7 @@ export default function Home() {
                 <a href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">FAQ</a>
                 <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors text-sm">Pricing</a>
                 <Button 
+                  onClick={() => handleAuthClick('signup')}
                   className="relative bg-orange-500 hover:bg-orange-600 text-white w-full rounded-full text-sm h-8 mt-2 transition-all duration-300 group overflow-hidden"
                   style={{
                     boxShadow: `
@@ -270,6 +291,7 @@ export default function Home() {
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button 
+                      onClick={() => handleAuthClick('signup')}
                       size="lg" 
                       className="relative bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 text-lg rounded-full font-medium shadow-lg transition-all duration-300 group overflow-hidden"
                       style={{
@@ -623,7 +645,10 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full">
+                <Button 
+                  onClick={() => handleAuthClick('signup')}
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-full"
+                >
                   Get Started
                 </Button>
               </CardContent>
@@ -661,7 +686,10 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full">
+                <Button 
+                  onClick={() => handleAuthClick('signup')}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-full"
+                >
                   Upgrade Now
                 </Button>
               </CardContent>
@@ -773,6 +801,13 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={authModal.isOpen}
+        onClose={handleAuthClose}
+        mode={authModal.mode}
+      />
     </div>
   );
 }
