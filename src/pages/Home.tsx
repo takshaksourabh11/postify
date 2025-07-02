@@ -106,11 +106,12 @@ export default function Home() {
             {/* Logo */}
             <div className="flex items-center mt-2">
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 text-gray-700">
+                <div className="w-10 h-10 text-orange-500">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                     <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" />
                   </svg>
                 </div>
+                <span className="text-xl font-bold text-gray-900">Postify</span>
               </div>
             </div>
 
