@@ -73,14 +73,37 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
         setError(errorMessage)
         
         // Show additional debug info for configuration errors
-        if (errorMessage.includes('not configured')) {
-          console.group('🔧 SETUP INSTRUCTIONS')
-          console.log(`To enable ${selectedProvider} authentication:`)
-          console.log('1. Go to your Supabase Dashboard')
-          console.log('2. Navigate to Authentication → Providers')
-          console.log(`3. Enable ${selectedProvider === 'twitter' ? 'Twitter' : 'LinkedIn (OIDC)'} provider`)
-          console.log('4. Add your OAuth app credentials')
-          console.log('5. Configure redirect URLs')
+        if (errorMessage.includes('not properly configured') || errorMessage.includes('not enabled')) {
+          console.group('🔧 OAUTH SETUP REQUIRED')
+          console.log(`To enable ${selectedProvider} authentication, you need REAL OAuth credentials:`)
+          
+          if (selectedProvider === 'twitter') {
+            console.log('\n📱 Twitter/X OAuth Setup:')
+            console.log('1. Go to https://developer.twitter.com/en/portal/dashboard')
+            console.log('2. Create a new app (or use existing)')
+            console.log('3. Go to "Keys and tokens" tab')
+            console.log('4. Copy your API Key and API Secret Key')
+            console.log('5. In Supabase Dashboard → Authentication → Providers → Twitter:')
+            console.log('   - Enable the provider')
+            console.log('   - Enter your REAL API Key (not "Postify")')
+            console.log('   - Enter your REAL API Secret Key (not "V!rVmB6BYQhScD5")')
+            console.log('   - Callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+          } else {
+            console.log('\n💼 LinkedIn OAuth Setup:')
+            console.log('1. Go to https://developer.linkedin.com/apps')
+            console.log('2. Create a new app (or use existing)')
+            console.log('3. Add "Sign In with LinkedIn using OpenID Connect" product')
+            console.log('4. Go to "Auth" tab')
+            console.log('5. Copy your Client ID and Client Secret')
+            console.log('6. In Supabase Dashboard → Authentication → Providers → LinkedIn (OIDC):')
+            console.log('   - Enable the provider')
+            console.log('   - Enter your REAL Client ID (not "Postify")')
+            console.log('   - Enter your REAL Client Secret (not "V!rVmB6BYQhScD5")')
+            console.log('   - Callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+          }
+          
+          console.log('\n⚠️  IMPORTANT: The credentials you provided appear to be placeholders.')
+          console.log('You need to replace them with actual OAuth credentials from the respective platforms.')
           console.groupEnd()
         }
       } finally {
@@ -106,7 +129,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
 
   const handleDebugAuth = () => {
     debugAuthSystem()
-    toast.success('Debug information logged to console. Check browser developer tools.')
+    console.log('🔍 Debug information logged to console. Check browser developer tools.')
   }
 
   const getProviderPermissions = (provider: 'twitter' | 'linkedin') => {
@@ -194,11 +217,13 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       return {
         title: 'Twitter/X OAuth Setup Required',
         steps: [
-          'Go to Supabase Dashboard → Authentication → Providers',
-          'Enable "Twitter" provider',
-          'Create a Twitter Developer App at developer.twitter.com',
-          'Add your Twitter API Key and API Secret Key',
-          'Set redirect URL to: https://your-project.supabase.co/auth/v1/callback',
+          'Go to https://developer.twitter.com/en/portal/dashboard',
+          'Create a new app or select existing app',
+          'Navigate to "Keys and tokens" tab',
+          'Copy your API Key and API Secret Key',
+          'Go to Supabase Dashboard → Authentication → Providers → Twitter',
+          'Enable Twitter provider and enter your REAL credentials',
+          'Set callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback',
           'Save configuration and try again'
         ]
       }
@@ -206,11 +231,14 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       return {
         title: 'LinkedIn OAuth Setup Required',
         steps: [
-          'Go to Supabase Dashboard → Authentication → Providers',
-          'Enable "LinkedIn (OIDC)" provider',
-          'Create a LinkedIn App at developer.linkedin.com',
-          'Add your LinkedIn Client ID and Client Secret',
-          'Set redirect URL to: https://your-project.supabase.co/auth/v1/callback',
+          'Go to https://developer.linkedin.com/apps',
+          'Create a new app or select existing app',
+          'Add "Sign In with LinkedIn using OpenID Connect" product',
+          'Navigate to "Auth" tab',
+          'Copy your Client ID and Client Secret',
+          'Go to Supabase Dashboard → Authentication → Providers → LinkedIn (OIDC)',
+          'Enable LinkedIn provider and enter your REAL credentials',
+          'Set callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback',
           'Save configuration and try again'
         ]
       }
@@ -228,11 +256,11 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
 
         {/* Debug Panel (Development Only) */}
         {showDebugInfo && (
-          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4">
+          <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3 mb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Bug className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-800">Debug Mode</span>
+                <Bug className="h-4 w-4 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-800">Debug Mode</span>
               </div>
               <Button
                 onClick={handleDebugAuth}
@@ -243,11 +271,22 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
                 Run Debug
               </Button>
             </div>
-            <p className="text-xs text-gray-600 mt-1">
-              Development mode detected. Debug information will be logged to console.
+            <p className="text-xs text-yellow-700 mt-1">
+              Development mode detected. Check console for OAuth configuration status.
             </p>
           </div>
         )}
+
+        {/* Credential Warning */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-medium text-orange-800">OAuth Setup Required</span>
+          </div>
+          <p className="text-xs text-orange-700 mt-1">
+            Please ensure you have configured real OAuth credentials in Supabase. The placeholder credentials need to be replaced with actual API keys from Twitter/LinkedIn.
+          </p>
+        </div>
 
         {/* Error Display */}
         {error && (
@@ -259,7 +298,7 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
             <p className="text-xs text-red-700 mt-1">{error}</p>
             
             {/* Configuration Help */}
-            {error.includes('not configured') && selectedProvider && (
+            {(error.includes('not properly configured') || error.includes('not enabled')) && selectedProvider && (
               <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
                 <div className="flex items-center space-x-2 mb-2">
                   <Settings className="h-3 w-3 text-blue-600" />
