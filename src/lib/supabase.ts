@@ -11,7 +11,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 })
 
@@ -56,10 +57,10 @@ export interface PostEngagement {
   comments: number
   impressions: number
   clicks: number
-  last_updated: string
+  last_updated: string | null
 }
 
-// Database operations
+// Database operations with enhanced error handling and retry logic
 export class DatabaseOperations {
   /**
    * Create or update user profile after authentication
@@ -70,63 +71,148 @@ export class DatabaseOperations {
     name: string
     avatar_url?: string
   }): Promise<User | null> {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .upsert({
+    const maxRetries = 3
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Attempting to upsert user (attempt ${attempt}/${maxRetries}):`, userData.id)
+
+        // Validate required fields
+        if (!userData.id || !userData.email || !userData.name) {
+          throw new Error('Missing required user data: id, email, or name')
+        }
+
+        const userRecord = {
           id: userData.id,
-          email: userData.email,
-          name: userData.name,
-          avatar_url: userData.avatar_url,
+          email: userData.email.toLowerCase().trim(),
+          name: userData.name.trim(),
+          avatar_url: userData.avatar_url || null,
           updated_at: new Date().toISOString(),
           last_login_at: new Date().toISOString(),
+          // Only set preferences on insert, not update
           preferences: {
-            timezone: 'UTC',
-            language: 'en',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+            language: navigator.language?.split('-')[0] || 'en',
             email_notifications: true,
             push_notifications: true,
             auto_scheduling: false,
             default_post_time: '09:00'
           }
-        }, {
-          onConflict: 'id'
-        })
-        .select()
-        .single()
+        }
 
-      if (error) {
-        console.error('Error upserting user:', error)
-        return null
+        console.log('Upserting user record:', userRecord)
+
+        const { data, error } = await supabase
+          .from('users')
+          .upsert(userRecord, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+          })
+          .select()
+          .single()
+
+        if (error) {
+          console.error(`Upsert error (attempt ${attempt}):`, error)
+          lastError = new Error(`Database error: ${error.message}`)
+          
+          // Don't retry on certain errors
+          if (error.code === 'PGRST116' || error.message.includes('JWT')) {
+            throw lastError
+          }
+          
+          if (attempt === maxRetries) {
+            throw lastError
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          continue
+        }
+
+        if (!data) {
+          lastError = new Error('No data returned from upsert operation')
+          if (attempt === maxRetries) {
+            throw lastError
+          }
+          continue
+        }
+
+        console.log('User upserted successfully:', data.id)
+        return data
+
+      } catch (error) {
+        console.error(`Error in upsertUser attempt ${attempt}:`, error)
+        lastError = error instanceof Error ? error : new Error('Unknown error')
+        
+        if (attempt === maxRetries) {
+          throw lastError
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
       }
-
-      return data
-    } catch (error) {
-      console.error('Error in upsertUser:', error)
-      return null
     }
+
+    throw lastError || new Error('Failed to upsert user after all retries')
   }
 
   /**
-   * Get user by ID
+   * Get user by ID with retry logic
    */
   static async getUserById(userId: string): Promise<User | null> {
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
+    const maxRetries = 3
+    let lastError: Error | null = null
 
-      if (error) {
-        console.error('Error getting user:', error)
-        return null
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Fetching user by ID (attempt ${attempt}/${maxRetries}):`, userId)
+
+        if (!userId) {
+          throw new Error('User ID is required')
+        }
+
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single()
+
+        if (error) {
+          console.error(`Get user error (attempt ${attempt}):`, error)
+          
+          // If user not found, don't retry
+          if (error.code === 'PGRST116') {
+            console.log('User not found in database:', userId)
+            return null
+          }
+          
+          lastError = new Error(`Database error: ${error.message}`)
+          
+          if (attempt === maxRetries) {
+            throw lastError
+          }
+          
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          continue
+        }
+
+        console.log('User fetched successfully:', data?.id)
+        return data
+
+      } catch (error) {
+        console.error(`Error in getUserById attempt ${attempt}:`, error)
+        lastError = error instanceof Error ? error : new Error('Unknown error')
+        
+        if (attempt === maxRetries) {
+          throw lastError
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
       }
-
-      return data
-    } catch (error) {
-      console.error('Error in getUserById:', error)
-      return null
     }
+
+    throw lastError || new Error('Failed to get user after all retries')
   }
 
   /**
@@ -137,6 +223,12 @@ export class DatabaseOperations {
     preferences: Partial<UserPreferences>
   ): Promise<User | null> {
     try {
+      console.log('Updating user preferences:', userId, preferences)
+
+      if (!userId) {
+        throw new Error('User ID is required')
+      }
+
       const { data, error } = await supabase
         .from('users')
         .update({
@@ -149,13 +241,15 @@ export class DatabaseOperations {
 
       if (error) {
         console.error('Error updating preferences:', error)
-        return null
+        throw new Error(`Failed to update preferences: ${error.message}`)
       }
 
+      console.log('Preferences updated successfully')
       return data
+
     } catch (error) {
       console.error('Error in updateUserPreferences:', error)
-      return null
+      throw error
     }
   }
 
@@ -170,6 +264,12 @@ export class DatabaseOperations {
     scheduled_at?: string
   }): Promise<Post | null> {
     try {
+      console.log('Creating new post:', postData)
+
+      if (!postData.user_id || !postData.content || !postData.platform) {
+        throw new Error('Missing required post data')
+      }
+
       const { data, error } = await supabase
         .from('posts')
         .insert({
@@ -180,7 +280,7 @@ export class DatabaseOperations {
             comments: 0,
             impressions: 0,
             clicks: 0,
-            last_updated: new Date().toISOString()
+            last_updated: null
           }
         })
         .select()
@@ -188,36 +288,92 @@ export class DatabaseOperations {
 
       if (error) {
         console.error('Error creating post:', error)
-        return null
+        throw new Error(`Failed to create post: ${error.message}`)
       }
 
+      console.log('Post created successfully:', data.id)
       return data
+
     } catch (error) {
       console.error('Error in createPost:', error)
-      return null
+      throw error
     }
   }
 
   /**
-   * Get user's posts
+   * Get user's posts with pagination
    */
-  static async getUserPosts(userId: string): Promise<Post[]> {
+  static async getUserPosts(
+    userId: string, 
+    limit: number = 50, 
+    offset: number = 0
+  ): Promise<Post[]> {
     try {
+      console.log('Fetching user posts:', userId, { limit, offset })
+
+      if (!userId) {
+        throw new Error('User ID is required')
+      }
+
       const { data, error } = await supabase
         .from('posts')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
 
       if (error) {
         console.error('Error getting posts:', error)
-        return []
+        throw new Error(`Failed to get posts: ${error.message}`)
       }
 
+      console.log(`Fetched ${data?.length || 0} posts for user`)
       return data || []
+
     } catch (error) {
       console.error('Error in getUserPosts:', error)
       return []
+    }
+  }
+
+  /**
+   * Update post engagement data
+   */
+  static async updatePostEngagement(
+    postId: string,
+    engagement: Partial<PostEngagement>
+  ): Promise<Post | null> {
+    try {
+      console.log('Updating post engagement:', postId, engagement)
+
+      if (!postId) {
+        throw new Error('Post ID is required')
+      }
+
+      const { data, error } = await supabase
+        .from('posts')
+        .update({
+          engagement: {
+            ...engagement,
+            last_updated: new Date().toISOString()
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error updating engagement:', error)
+        throw new Error(`Failed to update engagement: ${error.message}`)
+      }
+
+      console.log('Engagement updated successfully')
+      return data
+
+    } catch (error) {
+      console.error('Error in updatePostEngagement:', error)
+      throw error
     }
   }
 }
