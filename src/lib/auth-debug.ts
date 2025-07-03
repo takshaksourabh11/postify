@@ -12,6 +12,7 @@ export class AuthDebugger {
   static logAuthFlow(step: string, data?: any) {
     console.group(`${this.logPrefix} ${step}`)
     console.log('Timestamp:', new Date().toISOString())
+    console.log('Current URL:', window.location.href)
     if (data) {
       console.log('Data:', data)
     }
@@ -43,6 +44,8 @@ export class AuthDebugger {
     console.error('Error Code:', error?.code)
     console.error('Error Details:', error?.details)
     console.error('Stack Trace:', error?.stack)
+    console.error('Timestamp:', new Date().toISOString())
+    console.error('Current URL:', window.location.href)
     console.groupEnd()
   }
 
@@ -57,8 +60,8 @@ export class AuthDebugger {
       const { supabase } = await import('../lib/supabase')
       
       // Check if we can access auth
-      const { data: session } = await supabase.auth.getSession()
-      console.log('Supabase Auth Access:', !!session)
+      const { data: session, error } = await supabase.auth.getSession()
+      console.log('Supabase Auth Access:', !!session, error ? `Error: ${error.message}` : 'OK')
       
       // Check provider availability (this will help identify configuration issues)
       console.log('Provider being tested:', provider)
@@ -72,7 +75,8 @@ export class AuthDebugger {
           hasApiSecret: !!X_API_CONFIG.apiSecret,
           hasClientId: !!X_API_CONFIG.clientId,
           hasClientSecret: !!X_API_CONFIG.clientSecret,
-          callbackUrl: X_API_CONFIG.callbackUrl
+          callbackUrl: X_API_CONFIG.callbackUrl,
+          allConfigured: !!(X_API_CONFIG.apiKey && X_API_CONFIG.apiSecret && X_API_CONFIG.clientId && X_API_CONFIG.clientSecret)
         })
       }
       
@@ -101,6 +105,8 @@ export class AuthDebugger {
     console.log('Required Environment Variables:', requiredEnvVars)
     console.log('Missing Variables:', missingVars)
     console.log('Environment Status:', missingVars.length === 0 ? 'VALID' : 'INVALID')
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+    console.log('Anon Key Present:', !!import.meta.env.VITE_SUPABASE_ANON_KEY)
     
     if (missingVars.length > 0) {
       console.error('Missing environment variables:', missingVars)
@@ -128,16 +134,30 @@ export class AuthDebugger {
       sessionStorage: typeof sessionStorage !== 'undefined'
     }
     
+    // URL information
+    const urlInfo = {
+      currentUrl: window.location.href,
+      origin: window.location.origin,
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hash: window.location.hash
+    }
+    
     console.log('Environment Valid:', envValid)
     console.log('Browser Info:', browserInfo)
-    console.log('Current URL:', window.location.href)
-    console.log('Origin:', window.location.origin)
+    console.log('URL Info:', urlInfo)
     
     // X API Configuration check
     import('../lib/supabase').then(({ X_API_CONFIG }) => {
       console.log('X API Configuration:', {
         configured: !!(X_API_CONFIG.apiKey && X_API_CONFIG.apiSecret && X_API_CONFIG.clientId && X_API_CONFIG.clientSecret),
-        callbackUrl: X_API_CONFIG.callbackUrl
+        callbackUrl: X_API_CONFIG.callbackUrl,
+        hasAllCredentials: {
+          apiKey: !!X_API_CONFIG.apiKey,
+          apiSecret: !!X_API_CONFIG.apiSecret,
+          clientId: !!X_API_CONFIG.clientId,
+          clientSecret: !!X_API_CONFIG.clientSecret
+        }
       })
     })
     
@@ -150,6 +170,37 @@ export class AuthDebugger {
       origin: window.location.origin
     }
   }
+
+  /**
+   * Test database connectivity
+   */
+  static async testDatabaseConnectivity() {
+    console.group(`${this.logPrefix} Database Connectivity Test`)
+    
+    try {
+      const { supabase } = await import('../lib/supabase')
+      
+      // Test basic connection
+      const { data, error } = await supabase
+        .from('users')
+        .select('count')
+        .limit(1)
+      
+      if (error) {
+        console.error('Database connection failed:', error)
+        return false
+      }
+      
+      console.log('Database connection successful')
+      return true
+      
+    } catch (error) {
+      console.error('Database test failed:', error)
+      return false
+    } finally {
+      console.groupEnd()
+    }
+  }
 }
 
 /**
@@ -160,6 +211,8 @@ export class ProviderConfigChecker {
    * Check if provider is properly configured
    */
   static async checkProviderStatus(provider: 'twitter' | 'linkedin') {
+    console.group(`[PROVIDER-CHECK] ${provider.toUpperCase()} Status`)
+    
     try {
       const { supabase } = await import('../lib/supabase')
       
@@ -176,7 +229,6 @@ export class ProviderConfigChecker {
         supabaseProvider: supabaseProvider
       })
       
-      // This will help us understand what's happening
       console.log(`Checking ${provider} (${supabaseProvider}) configuration...`)
       
       // Check X API configuration if checking Twitter
@@ -190,18 +242,27 @@ export class ProviderConfigChecker {
             hasApiKey: !!X_API_CONFIG.apiKey,
             hasApiSecret: !!X_API_CONFIG.apiSecret,
             hasClientId: !!X_API_CONFIG.clientId,
-            hasClientSecret: !!X_API_CONFIG.clientSecret
+            hasClientSecret: !!X_API_CONFIG.clientSecret,
+            callbackUrl: X_API_CONFIG.callbackUrl
           }
         })
         
+        console.groupEnd()
         return {
           provider,
           supabaseProvider,
           configured: isConfigured,
-          available: true
+          available: true,
+          credentials: {
+            hasApiKey: !!X_API_CONFIG.apiKey,
+            hasApiSecret: !!X_API_CONFIG.apiSecret,
+            hasClientId: !!X_API_CONFIG.clientId,
+            hasClientSecret: !!X_API_CONFIG.clientSecret
+          }
         }
       }
       
+      console.groupEnd()
       return {
         provider,
         supabaseProvider,
@@ -210,12 +271,14 @@ export class ProviderConfigChecker {
       }
       
     } catch (error) {
+      console.error('Provider status check failed:', error)
       AuthDebugger.logError(error, `Provider Status Check - ${provider}`)
+      console.groupEnd()
       return {
         provider,
         configured: false,
         available: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
   }

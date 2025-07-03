@@ -27,6 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation()
 
   useEffect(() => {
+    console.group('🚀 AUTH SYSTEM INITIALIZATION')
+    console.log('Current URL:', window.location.href)
+    console.log('Current Path:', location.pathname)
+    console.log('Search Params:', location.search)
+    
     // Generate initial auth system report
     AuthDebugger.generateAuthReport()
     
@@ -39,29 +44,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Callback URL:', X_API_CONFIG.callbackUrl)
     console.groupEnd()
     
-    // Check for OAuth callback with code parameter
+    // Check for OAuth callback parameters
     const urlParams = new URLSearchParams(location.search)
     const authCode = urlParams.get('code')
+    const error = urlParams.get('error')
+    const errorDescription = urlParams.get('error_description')
     
     if (authCode) {
-      console.log('🔍 OAuth callback detected with code:', authCode)
-      // Clear the URL parameters to prevent issues
-      window.history.replaceState({}, document.title, window.location.pathname)
+      console.log('🔍 OAuth callback detected with code:', authCode.substring(0, 10) + '...')
+      // Clear the URL parameters immediately to prevent issues
+      const cleanUrl = window.location.pathname
+      window.history.replaceState({}, document.title, cleanUrl)
+      console.log('🧹 URL cleaned, removed OAuth parameters')
     }
     
+    if (error) {
+      console.error('❌ OAuth error detected:', error, errorDescription)
+      toast.error(`Authentication failed: ${errorDescription || error}`)
+    }
+    
+    console.groupEnd()
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.group('🔍 INITIAL SESSION CHECK')
+      console.log('Session exists:', !!session)
+      console.log('User ID:', session?.user?.id)
+      console.log('Provider:', session?.user?.app_metadata?.provider)
+      console.log('Email:', session?.user?.email)
+      console.log('Session error:', error)
+      console.groupEnd()
+      
       AuthDebugger.logAuthFlow('Initial Session Check', { 
         hasSession: !!session,
         userId: session?.user?.id,
-        hasAuthCode: !!authCode
+        hasAuthCode: !!authCode,
+        provider: session?.user?.app_metadata?.provider
       })
       
       setSession(session)
       setUser(session?.user ?? null)
+      
       if (session?.user) {
+        console.log('👤 User found in session, loading profile...')
         loadUserProfile(session.user.id)
       }
+      
       setLoading(false)
     })
 
@@ -69,22 +97,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.group('🔄 AUTH STATE CHANGE')
+      console.log('Event:', event)
+      console.log('Session exists:', !!session)
+      console.log('User ID:', session?.user?.id)
+      console.log('Provider:', session?.user?.app_metadata?.provider)
+      console.log('Current path:', location.pathname)
+      console.groupEnd()
+      
       AuthDebugger.logAuthFlow('Auth State Change', { 
         event, 
         hasSession: !!session,
         userId: session?.user?.id,
-        currentPath: location.pathname
+        currentPath: location.pathname,
+        provider: session?.user?.app_metadata?.provider
       })
       
       setSession(session)
       setUser(session?.user ?? null)
       
       if (event === 'SIGNED_IN' && session?.user) {
+        console.group('✅ USER SIGNED IN - PROCESSING')
+        console.log('User metadata:', session.user.user_metadata)
+        console.log('App metadata:', session.user.app_metadata)
+        
         try {
           AuthDebugger.logAuthFlow('User Sign In Process Started')
           
-          // Create or update user profile with retry mechanism
+          // Create or update user profile with enhanced error handling
+          console.log('🔄 Starting user profile creation/update...')
           await handleUserSignIn(session.user)
+          
+          console.log('📋 Loading user profile...')
           await loadUserProfile(session.user.id)
           
           // Navigate to dashboard after successful sign in
@@ -94,17 +138,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           AuthDebugger.logAuthFlow('User Sign In Process Completed')
         } catch (error) {
+          console.error('❌ Error in sign in process:', error)
           AuthDebugger.logError(error, 'Sign In Process')
-          toast.error('Connected successfully, but there was an issue setting up your profile.')
-          // Still navigate to dashboard even if profile creation fails
+          
+          // Show error but still navigate to dashboard
+          toast.error('Connected successfully, but there was an issue setting up your profile. You can still use the dashboard.')
           navigate('/dashboard', { replace: true })
         }
+        console.groupEnd()
+        
       } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out')
         AuthDebugger.logAuthFlow('User Signed Out')
         setUserProfile(null)
         navigate('/', { replace: true })
         toast.success('Successfully signed out!')
+        
       } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token refreshed')
         AuthDebugger.logAuthFlow('Token Refreshed', { userId: session?.user?.id })
       }
       
@@ -115,11 +166,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [navigate, location])
 
   const handleUserSignIn = async (user: User) => {
-    const maxRetries = 5
+    const maxRetries = 3
     let lastError: Error | null = null
+
+    console.group('👤 USER PROFILE CREATION/UPDATE')
+    console.log('User ID:', user.id)
+    console.log('Email:', user.email)
+    console.log('Provider:', user.app_metadata?.provider)
+    console.log('User metadata keys:', Object.keys(user.user_metadata || {}))
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        console.log(`🔄 Attempt ${attempt}/${maxRetries} - Creating/updating user profile`)
+        
         AuthDebugger.logAuthFlow(`Creating User Profile (Attempt ${attempt}/${maxRetries})`, {
           userId: user.id,
           email: user.email,
@@ -135,52 +194,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           avatar_url: extractAvatarUrl(user)
         }
 
+        console.log('📝 Extracted user data:', userData)
         AuthDebugger.logAuthFlow('User Data Extracted', userData)
 
         const result = await DatabaseOperations.upsertUser(userData)
         
-        if (!result) {
+        if (result) {
+          console.log('✅ User profile created/updated successfully:', result.id)
+          AuthDebugger.logAuthFlow('User Profile Created Successfully', { profileId: result.id })
+          console.groupEnd()
+          return result
+        } else {
           throw new Error('Failed to create user profile - no data returned')
         }
-
-        AuthDebugger.logAuthFlow('User Profile Created Successfully', { profileId: result.id })
-        return result
         
       } catch (error) {
+        console.error(`❌ Attempt ${attempt} failed:`, error)
         AuthDebugger.logError(error, `User Sign In Handler (Attempt ${attempt})`)
         lastError = error instanceof Error ? error : new Error('Unknown error')
         
-        // Don't retry on certain errors
-        if (error instanceof Error && (
-          error.message.includes('JWT') || 
-          error.message.includes('permission') ||
-          error.message.includes('PGRST116')
-        )) {
-          console.log('🚫 Non-retryable error, but continuing with authentication flow')
-          break
+        // Check if it's a non-retryable error
+        if (error instanceof Error) {
+          const errorMessage = error.message.toLowerCase()
+          if (
+            errorMessage.includes('jwt') || 
+            errorMessage.includes('permission') ||
+            errorMessage.includes('rls') ||
+            errorMessage.includes('unauthorized') ||
+            errorMessage.includes('forbidden')
+          ) {
+            console.log('🚫 Non-retryable error detected, stopping attempts')
+            break
+          }
         }
         
         if (attempt === maxRetries) {
-          console.log('🔥 All retry attempts exhausted, but continuing with authentication flow')
+          console.log('🔥 All retry attempts exhausted')
           break
         }
         
         // Wait before retry with exponential backoff
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
-        console.log(`⏳ Retrying user creation in ${delay}ms...`)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
+        console.log(`⏳ Retrying in ${delay}ms...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
 
-    // Don't throw error - let the user proceed to dashboard even if profile creation fails
+    // Log the final error but don't throw - allow user to proceed
     if (lastError) {
-      console.warn('⚠️ User profile creation failed, but allowing authentication to proceed:', lastError.message)
+      console.warn('⚠️ User profile creation failed after all attempts:', lastError.message)
+      console.warn('🔄 User will still be able to access the dashboard')
     }
+    
+    console.groupEnd()
   }
 
   const extractUserName = (user: User): string => {
     // Try different metadata fields based on provider
     const metadata = user.user_metadata || {}
+    
+    console.log('🏷️ Extracting name from metadata:', metadata)
     
     const name = (
       metadata.full_name ||
@@ -195,6 +268,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       'User'
     )
 
+    console.log('📝 Extracted name:', name)
     AuthDebugger.logAuthFlow('Name Extraction', { 
       extractedName: name,
       availableFields: Object.keys(metadata)
@@ -215,6 +289,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       undefined
     )
 
+    console.log('🖼️ Extracted avatar URL:', avatarUrl)
     AuthDebugger.logAuthFlow('Avatar URL Extraction', { 
       extractedUrl: avatarUrl,
       availableFields: Object.keys(metadata)
@@ -227,27 +302,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const maxRetries = 3
     let lastError: Error | null = null
 
+    console.group('📋 LOADING USER PROFILE')
+    console.log('User ID:', userId)
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        console.log(`🔄 Attempt ${attempt}/${maxRetries} - Loading user profile`)
         AuthDebugger.logAuthFlow(`Loading User Profile (Attempt ${attempt}/${maxRetries})`, { userId })
         
         const profile = await DatabaseOperations.getUserById(userId)
         
         if (profile) {
+          console.log('✅ User profile loaded successfully:', profile.id)
           AuthDebugger.logAuthFlow('User Profile Loaded Successfully')
           setUserProfile(profile)
+          console.groupEnd()
           return
         } else {
+          console.log('👤 No user profile found in database')
           AuthDebugger.logAuthFlow('No User Profile Found', { userId })
-          // If no profile found, this might be expected for new users
+          console.groupEnd()
           return
         }
       } catch (error) {
+        console.error(`❌ Attempt ${attempt} failed:`, error)
         AuthDebugger.logError(error, `Load User Profile (Attempt ${attempt})`)
         lastError = error instanceof Error ? error : new Error('Unknown error')
         
         if (attempt === maxRetries) {
-          console.error('Failed to load user profile after all retries:', lastError)
+          console.error('🔥 Failed to load user profile after all retries:', lastError)
+          console.groupEnd()
           return
         }
         
@@ -255,11 +339,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
       }
     }
+    
+    console.groupEnd()
   }
 
   const signInWithProvider = async (provider: 'twitter' | 'linkedin') => {
     try {
       setLoading(true)
+      
+      console.group('🚀 OAUTH SIGN IN PROCESS')
+      console.log('Provider:', provider)
+      console.log('Current URL:', window.location.href)
       
       AuthDebugger.logAuthFlow('OAuth Sign In Started', { provider })
       
@@ -283,7 +373,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      // Get the correct redirect URL - MUST point to dashboard
+      // CRITICAL: Ensure redirect URL points to dashboard
       const redirectTo = `${window.location.origin}/dashboard`
       
       const authOptions = {
@@ -297,6 +387,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
+      
+      console.log('🔧 OAuth Configuration:', {
+        provider: supabaseProvider,
+        scopes,
+        redirectTo: authOptions.options.redirectTo,
+        origin: window.location.origin,
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL
+      })
       
       AuthDebugger.logAuthFlow('OAuth Configuration', {
         provider: supabaseProvider,
@@ -316,6 +414,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
 
       if (error) {
+        console.error('❌ OAuth error:', error)
         AuthDebugger.logError(error, 'OAuth Sign In')
         
         // Enhanced error handling with specific messages
@@ -342,12 +441,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log(`  • Callback URL: ${X_API_CONFIG.callbackUrl}`)
             console.log('- Enable OAuth 2.0 with PKCE in your Twitter app settings')
             console.log('- Make sure your Twitter app has the required permissions')
-          } else {
-            console.log('\n💼 LinkedIn Setup:')
-            console.log('- Go to https://developer.linkedin.com/apps')
-            console.log('- Create a new app or use existing one')
-            console.log('- Add "Sign In with LinkedIn using OpenID Connect" product')
-            console.log('- Set redirect URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
           }
           console.groupEnd()
           
@@ -361,18 +454,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           userFriendlyMessage = `Failed to connect with ${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'}: ${error.message}`
         }
         
+        console.groupEnd()
         throw new Error(userFriendlyMessage)
       }
 
+      console.log('✅ OAuth initiated successfully')
+      console.log('Redirect URL:', data?.url)
+      
       AuthDebugger.logAuthFlow('OAuth Initiated Successfully', { 
         hasData: !!data,
         dataKeys: data ? Object.keys(data) : [],
         redirectUrl: data?.url
       })
 
-      console.log('✅ OAuth initiated, user will be redirected to:', data?.url)
+      console.log('🔄 User will be redirected to provider for authentication...')
+      console.groupEnd()
       
     } catch (error) {
+      console.error('❌ Sign in error:', error)
+      console.groupEnd()
       AuthDebugger.logError(error, 'Sign In With Provider')
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
       toast.error(errorMessage)
@@ -385,11 +485,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true)
+      console.log('👋 Starting sign out process...')
       AuthDebugger.logAuthFlow('Sign Out Started')
       
       const { error } = await supabase.auth.signOut()
       
       if (error) {
+        console.error('❌ Sign out error:', error)
         AuthDebugger.logError(error, 'Sign Out')
         toast.error('Failed to sign out')
         throw error
@@ -400,9 +502,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null)
       setUserProfile(null)
       
+      console.log('✅ Sign out completed successfully')
       AuthDebugger.logAuthFlow('Sign Out Completed')
       
     } catch (error) {
+      console.error('❌ Sign out process error:', error)
       AuthDebugger.logError(error, 'Sign Out Process')
     } finally {
       setLoading(false)
@@ -411,11 +515,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUserProfile = async () => {
     if (user) {
+      console.log('🔄 Refreshing user profile...')
       await loadUserProfile(user.id)
     }
   }
 
   const debugAuthSystem = () => {
+    console.group('🔍 AUTH SYSTEM DEBUG')
+    
     AuthDebugger.generateAuthReport()
     
     // Test both providers
@@ -425,6 +532,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Test connectivity
     AuthDebugger.testProviderConnectivity('twitter')
     AuthDebugger.testProviderConnectivity('linkedin')
+    
+    // Log current state
+    console.log('Current Auth State:', {
+      user: !!user,
+      session: !!session,
+      userProfile: !!userProfile,
+      loading,
+      currentPath: location.pathname
+    })
     
     // Log X API configuration
     console.group('🔧 X (Twitter) API Configuration Status')
@@ -436,6 +552,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       X_API_CONFIG.clientSecret
     ))
     console.groupEnd()
+    
+    console.groupEnd()
+    toast.success('Debug information logged to console. Check browser developer tools.')
   }
 
   const value = {

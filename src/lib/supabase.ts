@@ -83,12 +83,20 @@ export class DatabaseOperations {
     name: string
     avatar_url?: string
   }): Promise<User | null> {
-    const maxRetries = 5
+    const maxRetries = 3
     let lastError: Error | null = null
+
+    console.group('💾 DATABASE UPSERT OPERATION')
+    console.log('User data to upsert:', {
+      id: userData.id,
+      email: userData.email,
+      name: userData.name,
+      hasAvatar: !!userData.avatar_url
+    })
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🔄 Attempting to upsert user (attempt ${attempt}/${maxRetries}):`, userData.id)
+        console.log(`🔄 Database upsert attempt ${attempt}/${maxRetries}`)
 
         // Validate required fields
         if (!userData.id || !userData.email || !userData.name) {
@@ -106,16 +114,22 @@ export class DatabaseOperations {
         // Check if user already exists
         let existingUser = null
         try {
-          const { data: existing } = await supabase
+          console.log('🔍 Checking for existing user...')
+          const { data: existing, error: selectError } = await supabase
             .from('users')
             .select('*')
             .eq('id', userData.id)
-            .single()
+            .maybeSingle()
+          
+          if (selectError && selectError.code !== 'PGRST116') {
+            console.error('❌ Error checking existing user:', selectError)
+            throw selectError
+          }
           
           existingUser = existing
           console.log('📋 Existing user found:', !!existingUser)
         } catch (error) {
-          console.log('👤 No existing user found, will create new profile')
+          console.log('👤 No existing user found or error checking:', error)
         }
 
         // Prepare user record with proper defaults
@@ -140,7 +154,7 @@ export class DatabaseOperations {
           })
         }
 
-        console.log('💾 Upserting user record:', {
+        console.log('💾 Prepared user record:', {
           id: userRecord.id,
           email: userRecord.email,
           name: userRecord.name,
@@ -148,7 +162,8 @@ export class DatabaseOperations {
           hasDefaults: !existingUser
         })
 
-        // Use upsert with proper conflict resolution
+        // Try upsert first
+        console.log('🔄 Attempting upsert...')
         const { data, error } = await supabase
           .from('users')
           .upsert(userRecord, {
@@ -166,13 +181,10 @@ export class DatabaseOperations {
             hint: error.hint
           })
           
-          lastError = new Error(`Database error: ${error.message} (Code: ${error.code})`)
-          
-          // Check for specific error types
-          if (error.code === 'PGRST116') {
-            console.log('🔍 PGRST116 error - trying INSERT instead of UPSERT')
+          // Try INSERT if upsert fails with PGRST116 (not found)
+          if (error.code === 'PGRST116' && !existingUser) {
+            console.log('🔄 Trying INSERT instead of UPSERT...')
             
-            // Try direct INSERT for new users
             const { data: insertData, error: insertError } = await supabase
               .from('users')
               .insert(userRecord)
@@ -181,30 +193,36 @@ export class DatabaseOperations {
             
             if (insertError) {
               console.error('❌ INSERT also failed:', insertError)
-              lastError = new Error(`Insert failed: ${insertError.message}`)
+              lastError = new Error(`Insert failed: ${insertError.message} (Code: ${insertError.code})`)
             } else if (insertData) {
               console.log('✅ User inserted successfully via INSERT:', insertData.id)
+              console.groupEnd()
               return insertData
             }
+          } else {
+            lastError = new Error(`Database error: ${error.message} (Code: ${error.code})`)
           }
           
-          // Don't retry on certain errors
+          // Check for non-retryable errors
           if (
             error.message.includes('JWT') || 
             error.message.includes('permission') ||
             error.message.includes('RLS') ||
-            error.code === '42501' // Insufficient privilege
+            error.code === '42501' || // Insufficient privilege
+            error.code === '23505'    // Unique violation
           ) {
             console.error('🚫 Non-retryable error detected, throwing immediately')
+            console.groupEnd()
             throw lastError
           }
           
           if (attempt === maxRetries) {
+            console.groupEnd()
             throw lastError
           }
           
           // Wait before retry with exponential backoff
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
           console.log(`⏳ Waiting ${delay}ms before retry...`)
           await new Promise(resolve => setTimeout(resolve, delay))
           continue
@@ -214,6 +232,7 @@ export class DatabaseOperations {
           lastError = new Error('No data returned from upsert operation')
           console.error('❌ No data returned from upsert')
           if (attempt === maxRetries) {
+            console.groupEnd()
             throw lastError
           }
           continue
@@ -225,6 +244,7 @@ export class DatabaseOperations {
           name: data.name,
           created_at: data.created_at
         })
+        console.groupEnd()
         return data
 
       } catch (error) {
@@ -233,16 +253,18 @@ export class DatabaseOperations {
         
         if (attempt === maxRetries) {
           console.error('🔥 All retry attempts exhausted')
+          console.groupEnd()
           throw lastError
         }
         
         // Wait before retry with exponential backoff
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000)
         console.log(`⏳ Waiting ${delay}ms before retry...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
 
+    console.groupEnd()
     throw lastError || new Error('Failed to upsert user after all retries')
   }
 
@@ -253,9 +275,12 @@ export class DatabaseOperations {
     const maxRetries = 3
     let lastError: Error | null = null
 
+    console.group('🔍 DATABASE GET USER OPERATION')
+    console.log('User ID:', userId)
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🔍 Fetching user by ID (attempt ${attempt}/${maxRetries}):`, userId)
+        console.log(`🔄 Database get user attempt ${attempt}/${maxRetries}`)
 
         if (!userId) {
           throw new Error('User ID is required')
@@ -265,7 +290,7 @@ export class DatabaseOperations {
           .from('users')
           .select('*')
           .eq('id', userId)
-          .single()
+          .maybeSingle()
 
         if (error) {
           console.error(`❌ Get user error (attempt ${attempt}):`, error)
@@ -273,12 +298,14 @@ export class DatabaseOperations {
           // If user not found, don't retry
           if (error.code === 'PGRST116') {
             console.log('👤 User not found in database:', userId)
+            console.groupEnd()
             return null
           }
           
           lastError = new Error(`Database error: ${error.message}`)
           
           if (attempt === maxRetries) {
+            console.groupEnd()
             throw lastError
           }
           
@@ -286,7 +313,13 @@ export class DatabaseOperations {
           continue
         }
 
-        console.log('✅ User fetched successfully:', data?.id)
+        if (data) {
+          console.log('✅ User fetched successfully:', data.id)
+        } else {
+          console.log('👤 No user found with ID:', userId)
+        }
+        
+        console.groupEnd()
         return data
 
       } catch (error) {
@@ -294,6 +327,7 @@ export class DatabaseOperations {
         lastError = error instanceof Error ? error : new Error('Unknown error')
         
         if (attempt === maxRetries) {
+          console.groupEnd()
           throw lastError
         }
         
@@ -301,6 +335,7 @@ export class DatabaseOperations {
       }
     }
 
+    console.groupEnd()
     throw lastError || new Error('Failed to get user after all retries')
   }
 
