@@ -388,10 +388,31 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
               </div>
             </div>
 
-            {/* Privacy Note */}
-            <div className="text-xs text-gray-500 text-center">
-              <Lock className="h-3 w-3 inline mr-1" />
-              We never store your passwords. Your data is encrypted and secure.
+            {/* Legal Links */}
+            <div className="text-xs text-gray-500 text-center space-y-2">
+              <div className="flex items-center justify-center space-x-1">
+                <Lock className="h-3 w-3" />
+                <span>We never store your passwords. Your data is encrypted and secure.</span>
+              </div>
+              <div className="flex items-center justify-center space-x-4">
+                <a 
+                  href="/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Terms of Service
+                </a>
+                <span>•</span>
+                <a 
+                  href="/privacy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Privacy Policy
+                </a>
+              </div>
             </div>
           </div>
         ) : (
@@ -462,6 +483,30 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
                     <li>• Optimize your posting times for maximum engagement</li>
                     <li>• Generate AI-powered content suggestions</li>
                   </ul>
+                </div>
+
+                {/* Legal Agreement */}
+                <div className="text-xs text-gray-500 text-center">
+                  <p>By continuing, you agree to our</p>
+                  <div className="flex items-center justify-center space-x-2 mt-1">
+                    <a 
+                      href="/terms" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Terms of Service
+                    </a>
+                    <span>and</span>
+                    <a 
+                      href="/privacy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      Privacy Policy
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
