@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase, DatabaseOperations } from '../lib/supabase'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 interface AuthContextType {
   user: User | null
@@ -20,10 +21,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id)
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -43,9 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (event === 'SIGNED_IN' && session?.user) {
         try {
+          console.log('User signed in, creating profile...')
           // Create or update user profile
           await handleUserSignIn(session.user)
           await loadUserProfile(session.user.id)
+          
+          // Navigate to dashboard after successful sign in
+          navigate('/dashboard')
           toast.success('Successfully connected! Welcome to Postify!')
         } catch (error) {
           console.error('Error during sign in process:', error)
@@ -53,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (event === 'SIGNED_OUT') {
         setUserProfile(null)
+        navigate('/')
         toast.success('Successfully signed out!')
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed for user:', session?.user?.id)
@@ -62,11 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
   const handleUserSignIn = async (user: User) => {
     try {
       console.log('Creating/updating user profile for:', user.id)
+      console.log('User metadata:', user.user_metadata)
       
       // Extract user data from different providers
       const userData = {
@@ -103,6 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       metadata.preferred_username ||
       metadata.username ||
       metadata.screen_name ||
+      metadata.given_name ||
+      metadata.first_name ||
       user.email?.split('@')[0] ||
       'User'
     )
@@ -116,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       metadata.picture ||
       metadata.profile_image_url ||
       metadata.profile_pic ||
+      metadata.image ||
       undefined
     )
   }
@@ -140,55 +152,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       
+      // Map provider names to Supabase provider names
+      const providerMap = {
+        twitter: 'twitter',
+        linkedin: 'linkedin_oidc'
+      } as const
+
+      const supabaseProvider = providerMap[provider]
+      
       // Define comprehensive scopes for each provider
-      const providerConfig = {
-        twitter: {
-          provider: 'twitter' as const,
-          options: {
-            redirectTo: `${window.location.origin}/dashboard`,
-            scopes: [
-              'tweet.read',
-              'tweet.write', 
-              'users.read',
-              'follows.read',
-              'offline.access',
-              'like.read',
-              'like.write'
-            ].join(' ')
-          }
-        },
-        linkedin_oidc: {
-          provider: 'linkedin_oidc' as const,
-          options: {
-            redirectTo: `${window.location.origin}/dashboard`,
-            scopes: [
-              'openid',
-              'profile',
-              'email',
-              'w_member_social',
-              'r_liteprofile',
-              'r_emailaddress'
-            ].join(' ')
-          }
-        }
+      const scopeMap = {
+        twitter: 'tweet.read tweet.write users.read follows.read offline.access like.read like.write',
+        linkedin_oidc: 'openid profile email w_member_social r_liteprofile r_emailaddress'
       }
 
-      const config = provider === 'twitter' ? providerConfig.twitter : providerConfig.linkedin_oidc
+      const scopes = scopeMap[supabaseProvider]
       
-      console.log('Initiating OAuth with provider:', provider, 'scopes:', config.options.scopes)
+      console.log('Initiating OAuth with provider:', supabaseProvider, 'scopes:', scopes)
 
-      const { data, error } = await supabase.auth.signInWithOAuth(config)
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: supabaseProvider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          scopes: scopes,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
+        }
+      })
 
       if (error) {
         console.error('OAuth error:', error)
-        throw new Error(`Failed to connect with ${provider}: ${error.message}`)
+        
+        // Handle specific error cases
+        if (error.message.includes('provider is not enabled')) {
+          throw new Error(`${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'} authentication is not configured yet. Please contact support or try the other provider.`)
+        } else if (error.message.includes('validation_failed')) {
+          throw new Error(`Authentication configuration error. Please try again or contact support.`)
+        } else {
+          throw new Error(`Failed to connect with ${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'}: ${error.message}`)
+        }
       }
 
       console.log('OAuth initiated successfully:', data)
       
     } catch (error) {
       console.error('Sign in error:', error)
-      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred')
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      toast.error(errorMessage)
       throw error
     } finally {
       setLoading(false)

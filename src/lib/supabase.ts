@@ -83,22 +83,49 @@ export class DatabaseOperations {
           throw new Error('Missing required user data: id, email, or name')
         }
 
+        // Clean and validate data
+        const cleanEmail = userData.email.toLowerCase().trim()
+        const cleanName = userData.name.trim()
+
+        if (!cleanEmail || !cleanName) {
+          throw new Error('Email and name cannot be empty')
+        }
+
+        // Get current user preferences if they exist
+        let existingPreferences = null
+        try {
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('preferences')
+            .eq('id', userData.id)
+            .single()
+          
+          if (existingUser) {
+            existingPreferences = existingUser.preferences
+          }
+        } catch (error) {
+          // User doesn't exist yet, which is fine
+          console.log('User does not exist yet, will create new profile')
+        }
+
         const userRecord = {
           id: userData.id,
-          email: userData.email.toLowerCase().trim(),
-          name: userData.name.trim(),
+          email: cleanEmail,
+          name: cleanName,
           avatar_url: userData.avatar_url || null,
           updated_at: new Date().toISOString(),
           last_login_at: new Date().toISOString(),
-          // Only set preferences on insert, not update
-          preferences: {
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-            language: navigator.language?.split('-')[0] || 'en',
-            email_notifications: true,
-            push_notifications: true,
-            auto_scheduling: false,
-            default_post_time: '09:00'
-          }
+          // Only set default preferences if user doesn't exist
+          ...(existingPreferences ? {} : {
+            preferences: {
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+              language: navigator.language?.split('-')[0] || 'en',
+              email_notifications: true,
+              push_notifications: true,
+              auto_scheduling: false,
+              default_post_time: '09:00'
+            }
+          })
         }
 
         console.log('Upserting user record:', userRecord)
@@ -117,7 +144,7 @@ export class DatabaseOperations {
           lastError = new Error(`Database error: ${error.message}`)
           
           // Don't retry on certain errors
-          if (error.code === 'PGRST116' || error.message.includes('JWT')) {
+          if (error.code === 'PGRST116' || error.message.includes('JWT') || error.message.includes('permission')) {
             throw lastError
           }
           
@@ -125,8 +152,8 @@ export class DatabaseOperations {
             throw lastError
           }
           
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          // Wait before retry with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
           continue
         }
 
@@ -149,8 +176,8 @@ export class DatabaseOperations {
           throw lastError
         }
         
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        // Wait before retry with exponential backoff
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
       }
     }
 
@@ -193,7 +220,7 @@ export class DatabaseOperations {
             throw lastError
           }
           
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
           continue
         }
 
@@ -208,7 +235,7 @@ export class DatabaseOperations {
           throw lastError
         }
         
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt - 1)))
       }
     }
 

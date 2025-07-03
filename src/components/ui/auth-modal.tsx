@@ -20,7 +20,8 @@ import {
   UserCheck,
   FileText,
   AlertCircle,
-  Loader2
+  Loader2,
+  Info
 } from 'lucide-react'
 
 interface AuthModalProps {
@@ -48,10 +49,11 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
         setIsConnecting(true)
         setError(null)
         await signInWithProvider(selectedProvider)
-        onClose()
+        // Don't close modal here - let the auth context handle navigation
       } catch (err) {
         console.error('Authentication error:', err)
-        setError(`Failed to connect with ${selectedProvider}. Please try again.`)
+        const errorMessage = err instanceof Error ? err.message : `Failed to connect with ${selectedProvider}. Please try again.`
+        setError(errorMessage)
       } finally {
         setIsConnecting(false)
       }
@@ -169,6 +171,17 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
               <span className="text-sm font-medium text-red-800">Connection Failed</span>
             </div>
             <p className="text-xs text-red-700 mt-1">{error}</p>
+            {error.includes('not configured') && (
+              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                <div className="flex items-center space-x-2">
+                  <Info className="h-3 w-3 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-800">Setup Required</span>
+                </div>
+                <p className="text-xs text-blue-700 mt-1">
+                  The social media provider needs to be configured in the admin panel. Please try the other provider or contact support.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
