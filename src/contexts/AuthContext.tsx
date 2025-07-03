@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase, DatabaseOperations } from '../lib/supabase'
+import { supabase, DatabaseOperations, X_API_CONFIG } from '../lib/supabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { AuthDebugger, ProviderConfigChecker } from '../lib/auth-debug'
@@ -28,6 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Generate initial auth system report
     AuthDebugger.generateAuthReport()
+    
+    // Log X API configuration status
+    console.group('🔧 X (Twitter) API Configuration')
+    console.log('API Key:', X_API_CONFIG.apiKey ? '✅ Present' : '❌ Missing')
+    console.log('API Secret:', X_API_CONFIG.apiSecret ? '✅ Present' : '❌ Missing')
+    console.log('Client ID:', X_API_CONFIG.clientId ? '✅ Present' : '❌ Missing')
+    console.log('Client Secret:', X_API_CONFIG.clientSecret ? '✅ Present' : '❌ Missing')
+    console.log('Callback URL:', X_API_CONFIG.callbackUrl)
+    console.groupEnd()
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -67,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           // Navigate to dashboard after successful sign in
           navigate('/dashboard')
-          toast.success('Successfully connected! Welcome to Postify!')
+          toast.success('Successfully connected to X! Welcome to Postify!')
           
           AuthDebugger.logAuthFlow('User Sign In Process Completed')
         } catch (error) {
@@ -94,7 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       AuthDebugger.logAuthFlow('Creating User Profile', {
         userId: user.id,
         email: user.email,
-        metadata: user.user_metadata
+        metadata: user.user_metadata,
+        provider: user.app_metadata?.provider
       })
       
       // Extract user data from different providers
@@ -209,7 +219,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      // Get the correct redirect URL from environment or use the provided one
+      // Get the correct redirect URL
       const redirectTo = `${window.location.origin}/dashboard`
       
       const authOptions = {
@@ -229,7 +239,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         scopes,
         redirectTo: authOptions.options.redirectTo,
         origin: window.location.origin,
-        supabaseUrl: import.meta.env.VITE_SUPABASE_URL
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+        xApiConfig: provider === 'twitter' ? {
+          hasApiKey: !!X_API_CONFIG.apiKey,
+          hasClientId: !!X_API_CONFIG.clientId,
+          callbackUrl: X_API_CONFIG.callbackUrl
+        } : null
       })
 
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
@@ -252,17 +267,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('4. Required scopes are configured')
           
           if (provider === 'twitter') {
-            console.log('\n📱 Twitter/X Setup:')
+            console.log('\n📱 Twitter/X Setup Instructions:')
             console.log('- Go to https://developer.twitter.com/en/portal/dashboard')
             console.log('- Create a new app or use existing one')
-            console.log('- Get your API Key and API Secret Key')
-            console.log('- Enable OAuth 2.0 with PKCE')
-            console.log('- Set callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+            console.log('- In Supabase Dashboard → Authentication → Providers → Twitter:')
+            console.log(`  • API Key: ${X_API_CONFIG.apiKey}`)
+            console.log(`  • API Secret Key: ${X_API_CONFIG.apiSecret}`)
+            console.log(`  • Callback URL: ${X_API_CONFIG.callbackUrl}`)
+            console.log('- Enable OAuth 2.0 with PKCE in your Twitter app settings')
+            console.log('- Make sure your Twitter app has the required permissions')
           } else {
             console.log('\n💼 LinkedIn Setup:')
             console.log('- Go to https://developer.linkedin.com/apps')
             console.log('- Create a new app or use existing one')
-            console.log('- Get your Client ID and Client Secret')
             console.log('- Add "Sign In with LinkedIn using OpenID Connect" product')
             console.log('- Set redirect URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
           }
@@ -339,6 +356,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Test connectivity
     AuthDebugger.testProviderConnectivity('twitter')
     AuthDebugger.testProviderConnectivity('linkedin')
+    
+    // Log X API configuration
+    console.group('🔧 X (Twitter) API Configuration Status')
+    console.log('Configuration Object:', X_API_CONFIG)
+    console.log('All credentials present:', !!(
+      X_API_CONFIG.apiKey && 
+      X_API_CONFIG.apiSecret && 
+      X_API_CONFIG.clientId && 
+      X_API_CONFIG.clientSecret
+    ))
+    console.groupEnd()
   }
 
   const value = {

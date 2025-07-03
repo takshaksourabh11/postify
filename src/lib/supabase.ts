@@ -60,6 +60,18 @@ export interface PostEngagement {
   last_updated: string | null
 }
 
+// X (Twitter) API Configuration
+export const X_API_CONFIG = {
+  apiKey: 'OwepxdbZkTdxijYC4uwlBNfvg',
+  apiSecret: 'DJfRSjDfjlNlGQAuQo8Cq9Vsr9CPLRzExHX3Wz6CABTsYeeCiV',
+  bearerToken: 'AAAAAAAAAAAAAAAAAAAAAMeL2wEAAAAAKulUNXu4jzLtOeuNsaSyaCSPQcM%3DYHwqx3UJ6cwjUt90n5ODn8bfsiWEH79ExkI3MpzGlRlAZPxXuO',
+  accessToken: '1472966333528625155-GevJ1CZnwCiQQvrlqdkJZezlXDYN4h',
+  accessTokenSecret: 'TSO3jrbIvV9zor3yh6t2dglNzBs0xhRU9eMfnTGrpJT7y',
+  clientId: 'UkZZSEJEWDdOYWluMnZ1Y1Bja206MTpjaQ',
+  clientSecret: 'kAsXjNr_Tf9vSjR7R_CagzJ-nmczdCd3X4dsQCEwlePFt2v1am',
+  callbackUrl: 'https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback'
+}
+
 // Database operations with enhanced error handling and retry logic
 export class DatabaseOperations {
   /**

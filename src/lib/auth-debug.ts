@@ -64,6 +64,18 @@ export class AuthDebugger {
       console.log('Provider being tested:', provider)
       console.log('Available providers should be configured in Supabase Dashboard')
       
+      // Test X API configuration if testing Twitter
+      if (provider === 'twitter') {
+        const { X_API_CONFIG } = await import('../lib/supabase')
+        console.log('X API Configuration Status:', {
+          hasApiKey: !!X_API_CONFIG.apiKey,
+          hasApiSecret: !!X_API_CONFIG.apiSecret,
+          hasClientId: !!X_API_CONFIG.clientId,
+          hasClientSecret: !!X_API_CONFIG.clientSecret,
+          callbackUrl: X_API_CONFIG.callbackUrl
+        })
+      }
+      
       return true
     } catch (error) {
       console.error('Connectivity test failed:', error)
@@ -121,6 +133,14 @@ export class AuthDebugger {
     console.log('Current URL:', window.location.href)
     console.log('Origin:', window.location.origin)
     
+    // X API Configuration check
+    import('../lib/supabase').then(({ X_API_CONFIG }) => {
+      console.log('X API Configuration:', {
+        configured: !!(X_API_CONFIG.apiKey && X_API_CONFIG.apiSecret && X_API_CONFIG.clientId && X_API_CONFIG.clientSecret),
+        callbackUrl: X_API_CONFIG.callbackUrl
+      })
+    })
+    
     console.groupEnd()
     
     return {
@@ -158,6 +178,29 @@ export class ProviderConfigChecker {
       
       // This will help us understand what's happening
       console.log(`Checking ${provider} (${supabaseProvider}) configuration...`)
+      
+      // Check X API configuration if checking Twitter
+      if (provider === 'twitter') {
+        const { X_API_CONFIG } = await import('../lib/supabase')
+        const isConfigured = !!(X_API_CONFIG.apiKey && X_API_CONFIG.apiSecret && X_API_CONFIG.clientId && X_API_CONFIG.clientSecret)
+        
+        console.log('X API Configuration Status:', {
+          configured: isConfigured,
+          details: {
+            hasApiKey: !!X_API_CONFIG.apiKey,
+            hasApiSecret: !!X_API_CONFIG.apiSecret,
+            hasClientId: !!X_API_CONFIG.clientId,
+            hasClientSecret: !!X_API_CONFIG.clientSecret
+          }
+        })
+        
+        return {
+          provider,
+          supabaseProvider,
+          configured: isConfigured,
+          available: true
+        }
+      }
       
       return {
         provider,

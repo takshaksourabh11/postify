@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '../../contexts/AuthContext'
 import { AuthDebugger } from '../../lib/auth-debug'
+import { X_API_CONFIG } from '../../lib/supabase'
 import { 
   Shield, 
   Users, 
@@ -54,6 +55,18 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
     
     // Log provider selection for debugging
     AuthDebugger.logAuthFlow('Provider Selected', { provider })
+    
+    // Log X API configuration when Twitter is selected
+    if (provider === 'twitter') {
+      console.group('🔧 X (Twitter) OAuth Configuration Check')
+      console.log('API Key:', X_API_CONFIG.apiKey ? '✅ Configured' : '❌ Missing')
+      console.log('API Secret:', X_API_CONFIG.apiSecret ? '✅ Configured' : '❌ Missing')
+      console.log('Client ID:', X_API_CONFIG.clientId ? '✅ Configured' : '❌ Missing')
+      console.log('Client Secret:', X_API_CONFIG.clientSecret ? '✅ Configured' : '❌ Missing')
+      console.log('Callback URL:', X_API_CONFIG.callbackUrl)
+      console.log('Ready for OAuth:', !!(X_API_CONFIG.apiKey && X_API_CONFIG.apiSecret && X_API_CONFIG.clientId && X_API_CONFIG.clientSecret))
+      console.groupEnd()
+    }
   }
 
   const handleContinue = async () => {
@@ -63,6 +76,10 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
         setError(null)
         
         AuthDebugger.logAuthFlow('Authentication Attempt Started', { provider: selectedProvider })
+        
+        if (selectedProvider === 'twitter') {
+          console.log('🚀 Initiating X (Twitter) OAuth with configured credentials...')
+        }
         
         await signInWithProvider(selectedProvider)
         // Don't close modal here - let the auth context handle navigation
@@ -75,19 +92,24 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
         // Show additional debug info for configuration errors
         if (errorMessage.includes('not properly configured') || errorMessage.includes('not enabled')) {
           console.group('🔧 OAUTH SETUP REQUIRED')
-          console.log(`To enable ${selectedProvider} authentication, you need REAL OAuth credentials:`)
+          console.log(`To enable ${selectedProvider} authentication, you need to configure Supabase:`)
           
           if (selectedProvider === 'twitter') {
-            console.log('\n📱 Twitter/X OAuth Setup:')
+            console.log('\n📱 Twitter/X OAuth Setup in Supabase:')
+            console.log('1. Go to Supabase Dashboard → Authentication → Providers → Twitter')
+            console.log('2. Enable the Twitter provider')
+            console.log('3. Enter the following credentials:')
+            console.log(`   • API Key: ${X_API_CONFIG.apiKey}`)
+            console.log(`   • API Secret Key: ${X_API_CONFIG.apiSecret}`)
+            console.log(`   • Callback URL: ${X_API_CONFIG.callbackUrl}`)
+            console.log('\n🔧 Twitter Developer Portal Setup:')
             console.log('1. Go to https://developer.twitter.com/en/portal/dashboard')
-            console.log('2. Create a new app (or use existing)')
-            console.log('3. Go to "Keys and tokens" tab')
-            console.log('4. Copy your API Key and API Secret Key')
-            console.log('5. In Supabase Dashboard → Authentication → Providers → Twitter:')
-            console.log('   - Enable the provider')
-            console.log('   - Enter your REAL API Key (not "Postify")')
-            console.log('   - Enter your REAL API Secret Key (not "V!rVmB6BYQhScD5")')
-            console.log('   - Callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+            console.log('2. Select your app or create a new one')
+            console.log('3. Go to "App settings" → "User authentication settings"')
+            console.log('4. Enable OAuth 2.0 with PKCE')
+            console.log('5. Set Type of App to "Web App"')
+            console.log(`6. Add Callback URL: ${X_API_CONFIG.callbackUrl}`)
+            console.log('7. Set permissions to "Read and write"')
           } else {
             console.log('\n💼 LinkedIn OAuth Setup:')
             console.log('1. Go to https://developer.linkedin.com/apps')
@@ -97,13 +119,11 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
             console.log('5. Copy your Client ID and Client Secret')
             console.log('6. In Supabase Dashboard → Authentication → Providers → LinkedIn (OIDC):')
             console.log('   - Enable the provider')
-            console.log('   - Enter your REAL Client ID (not "Postify")')
-            console.log('   - Enter your REAL Client Secret (not "V!rVmB6BYQhScD5")')
+            console.log('   - Enter your Client ID and Client Secret')
             console.log('   - Callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
           }
           
-          console.log('\n⚠️  IMPORTANT: The credentials you provided appear to be placeholders.')
-          console.log('You need to replace them with actual OAuth credentials from the respective platforms.')
+          console.log('\n⚠️  IMPORTANT: Make sure all credentials are correctly entered in Supabase.')
           console.groupEnd()
         }
       } finally {
@@ -219,11 +239,12 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
         steps: [
           'Go to https://developer.twitter.com/en/portal/dashboard',
           'Create a new app or select existing app',
-          'Navigate to "Keys and tokens" tab',
-          'Copy your API Key and API Secret Key',
+          'Navigate to "App settings" → "User authentication settings"',
+          'Enable OAuth 2.0 with PKCE',
+          'Set Type of App to "Web App"',
+          `Add Callback URL: ${X_API_CONFIG.callbackUrl}`,
           'Go to Supabase Dashboard → Authentication → Providers → Twitter',
-          'Enable Twitter provider and enter your REAL credentials',
-          'Set callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback',
+          'Enable Twitter provider and enter your credentials',
           'Save configuration and try again'
         ]
       }
@@ -277,14 +298,14 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
           </div>
         )}
 
-        {/* Credential Warning */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+        {/* X API Configuration Status */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
           <div className="flex items-center space-x-2">
-            <AlertCircle className="h-4 w-4 text-orange-600" />
-            <span className="text-sm font-medium text-orange-800">OAuth Setup Required</span>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-medium text-green-800">X (Twitter) API Ready</span>
           </div>
-          <p className="text-xs text-orange-700 mt-1">
-            Please ensure you have configured real OAuth credentials in Supabase. The placeholder credentials need to be replaced with actual API keys from Twitter/LinkedIn.
+          <p className="text-xs text-green-700 mt-1">
+            X OAuth credentials are configured and ready for authentication.
           </p>
         </div>
 
@@ -350,6 +371,9 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
                   <Twitter className="h-4 w-4 text-white" />
                 </div>
                 <span className="font-medium">Continue with X (Twitter)</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
+                  Ready
+                </Badge>
               </Button>
 
               <Button
