@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           AuthDebugger.logAuthFlow('User Sign In Process Started')
           
-          // Create or update user profile
+          // Create or update user profile with retry mechanism
           await handleUserSignIn(session.user)
           await loadUserProfile(session.user.id)
           
@@ -99,36 +99,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [navigate])
 
   const handleUserSignIn = async (user: User) => {
-    try {
-      AuthDebugger.logAuthFlow('Creating User Profile', {
-        userId: user.id,
-        email: user.email,
-        metadata: user.user_metadata,
-        provider: user.app_metadata?.provider
-      })
-      
-      // Extract user data from different providers
-      const userData = {
-        id: user.id,
-        email: user.email || '',
-        name: extractUserName(user),
-        avatar_url: extractAvatarUrl(user)
+    const maxRetries = 5
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        AuthDebugger.logAuthFlow(`Creating User Profile (Attempt ${attempt}/${maxRetries})`, {
+          userId: user.id,
+          email: user.email,
+          metadata: user.user_metadata,
+          provider: user.app_metadata?.provider
+        })
+        
+        // Extract user data from different providers
+        const userData = {
+          id: user.id,
+          email: user.email || '',
+          name: extractUserName(user),
+          avatar_url: extractAvatarUrl(user)
+        }
+
+        AuthDebugger.logAuthFlow('User Data Extracted', userData)
+
+        const result = await DatabaseOperations.upsertUser(userData)
+        
+        if (!result) {
+          throw new Error('Failed to create user profile - no data returned')
+        }
+
+        AuthDebugger.logAuthFlow('User Profile Created Successfully', { profileId: result.id })
+        return result
+        
+      } catch (error) {
+        AuthDebugger.logError(error, `User Sign In Handler (Attempt ${attempt})`)
+        lastError = error instanceof Error ? error : new Error('Unknown error')
+        
+        // Don't retry on certain errors
+        if (error instanceof Error && (
+          error.message.includes('JWT') || 
+          error.message.includes('permission') ||
+          error.message.includes('PGRST116')
+        )) {
+          throw lastError
+        }
+        
+        if (attempt === maxRetries) {
+          throw lastError
+        }
+        
+        // Wait before retry with exponential backoff
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
+        console.log(`Retrying user creation in ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
-
-      AuthDebugger.logAuthFlow('User Data Extracted', userData)
-
-      const result = await DatabaseOperations.upsertUser(userData)
-      
-      if (!result) {
-        throw new Error('Failed to create user profile')
-      }
-
-      AuthDebugger.logAuthFlow('User Profile Created Successfully', { profileId: result.id })
-      
-    } catch (error) {
-      AuthDebugger.logError(error, 'User Sign In Handler')
-      throw error
     }
+
+    throw lastError || new Error('Failed to create user profile after all retries')
   }
 
   const extractUserName = (user: User): string => {
@@ -177,19 +203,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const loadUserProfile = async (userId: string) => {
-    try {
-      AuthDebugger.logAuthFlow('Loading User Profile', { userId })
-      
-      const profile = await DatabaseOperations.getUserById(userId)
-      
-      if (profile) {
-        AuthDebugger.logAuthFlow('User Profile Loaded Successfully')
-        setUserProfile(profile)
-      } else {
-        AuthDebugger.logAuthFlow('No User Profile Found', { userId })
+    const maxRetries = 3
+    let lastError: Error | null = null
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        AuthDebugger.logAuthFlow(`Loading User Profile (Attempt ${attempt}/${maxRetries})`, { userId })
+        
+        const profile = await DatabaseOperations.getUserById(userId)
+        
+        if (profile) {
+          AuthDebugger.logAuthFlow('User Profile Loaded Successfully')
+          setUserProfile(profile)
+          return
+        } else {
+          AuthDebugger.logAuthFlow('No User Profile Found', { userId })
+          // If no profile found, this might be expected for new users
+          return
+        }
+      } catch (error) {
+        AuthDebugger.logError(error, `Load User Profile (Attempt ${attempt})`)
+        lastError = error instanceof Error ? error : new Error('Unknown error')
+        
+        if (attempt === maxRetries) {
+          console.error('Failed to load user profile after all retries:', lastError)
+          return
+        }
+        
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
       }
-    } catch (error) {
-      AuthDebugger.logError(error, 'Load User Profile')
     }
   }
 
