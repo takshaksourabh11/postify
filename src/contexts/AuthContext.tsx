@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Callback URL:', X_API_CONFIG.callbackUrl)
     console.groupEnd()
     
-    // Check for OAuth callback parameters
+    // Check for OAuth callback parameters - CRITICAL FIX
     const urlParams = new URLSearchParams(location.search)
     const authCode = urlParams.get('code')
     const error = urlParams.get('error')
@@ -52,10 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (authCode) {
       console.log('🔍 OAuth callback detected with code:', authCode.substring(0, 10) + '...')
-      // Clear the URL parameters immediately to prevent issues
+      console.log('🚨 CRITICAL: OAuth callback should be handled by Supabase, not our app!')
+      
+      // This indicates a configuration problem - the callback URL is wrong
+      console.error('❌ CONFIGURATION ERROR: OAuth callback URL is misconfigured!')
+      console.error('Expected: Supabase should handle the callback at /auth/v1/callback')
+      console.error('Actual: Our app is receiving the callback directly')
+      
+      toast.error('OAuth configuration error. Please check callback URL settings.')
+      
+      // Clear the URL parameters to prevent loops
       const cleanUrl = window.location.pathname
       window.history.replaceState({}, document.title, cleanUrl)
-      console.log('🧹 URL cleaned, removed OAuth parameters')
     }
     
     if (error) {
@@ -373,8 +381,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      // CRITICAL: Ensure redirect URL points to dashboard
-      const redirectTo = `${window.location.origin}/dashboard`
+      // CRITICAL FIX: Use Supabase's callback URL, not our app URL
+      const redirectTo = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`
+      
+      console.log('🔧 CRITICAL FIX: Using Supabase callback URL instead of app URL')
+      console.log('Previous (incorrect):', `${window.location.origin}/dashboard`)
+      console.log('New (correct):', redirectTo)
       
       const authOptions = {
         provider: supabaseProvider,
@@ -409,7 +421,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } : null
       })
 
-      console.log('🚀 Initiating OAuth with redirect URL:', redirectTo)
+      console.log('🚀 Initiating OAuth with Supabase callback URL:', redirectTo)
 
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
 
@@ -551,6 +563,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       X_API_CONFIG.clientId && 
       X_API_CONFIG.clientSecret
     ))
+    console.groupEnd()
+    
+    // CRITICAL: Check callback URL configuration
+    console.group('🚨 CALLBACK URL CONFIGURATION CHECK')
+    console.log('Current app origin:', window.location.origin)
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
+    console.log('Expected callback URL:', `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+    console.log('X API callback URL:', X_API_CONFIG.callbackUrl)
+    console.log('Callback URLs match:', X_API_CONFIG.callbackUrl === `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+    
+    if (X_API_CONFIG.callbackUrl !== `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`) {
+      console.error('❌ CALLBACK URL MISMATCH!')
+      console.error('This is likely the cause of the redirect issue.')
+      console.error('Please update the callback URL in your X Developer Portal to:', `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+    } else {
+      console.log('✅ Callback URLs are correctly configured')
+    }
     console.groupEnd()
     
     console.groupEnd()

@@ -16,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 })
 
-// X (Twitter) API Configuration
+// X (Twitter) API Configuration - CRITICAL FIX
 export const X_API_CONFIG = {
   apiKey: 'OwepxdbZkTdxijYC4uwlBNfvg',
   apiSecret: 'DJfRSjDfjlNlGQAuQo8Cq9Vsr9CPLRzExHX3Wz6CABTsYeeCiV',
@@ -25,7 +25,8 @@ export const X_API_CONFIG = {
   accessTokenSecret: 'TSO3jrbIvV9zor3yh6t2dglNzBs0xhRU9eMfnTGrpJT7y',
   clientId: 'UkZZSEJEWDdOYWluMnZ1Y1Bja206MTpjaQ',
   clientSecret: 'kAsXjNr_Tf9vSjR7R_CagzJ-nmczdCd3X4dsQCEwlePFt2v1am',
-  callbackUrl: 'https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback'
+  // CRITICAL FIX: Use Supabase callback URL, not app URL
+  callbackUrl: `${supabaseUrl}/auth/v1/callback`
 }
 
 // Database types
