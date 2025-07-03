@@ -209,10 +209,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
+      // Get the correct redirect URL from environment or use the provided one
+      const redirectTo = `${window.location.origin}/dashboard`
+      
       const authOptions = {
         provider: supabaseProvider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirectTo,
           scopes: scopes,
           queryParams: {
             access_type: 'offline',
@@ -225,7 +228,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         provider: supabaseProvider,
         scopes,
         redirectTo: authOptions.options.redirectTo,
-        origin: window.location.origin
+        origin: window.location.origin,
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL
       })
 
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
@@ -237,20 +241,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let userFriendlyMessage = ''
         
         if (error.message.includes('provider is not enabled') || error.message.includes('validation_failed')) {
-          userFriendlyMessage = `${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'} authentication is not configured in the system yet. Please try the other provider or contact support.`
+          userFriendlyMessage = `${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'} authentication is not properly configured. Please check your OAuth credentials in Supabase.`
           
           // Log detailed configuration help
-          console.group('🔧 CONFIGURATION REQUIRED')
-          console.log(`To fix this error, configure ${provider} OAuth in your Supabase dashboard:`)
-          console.log('1. Go to Supabase Dashboard → Authentication → Providers')
-          console.log(`2. Enable "${provider === 'twitter' ? 'Twitter' : 'LinkedIn (OIDC)'}" provider`)
-          console.log('3. Add your OAuth app credentials (Client ID, Client Secret)')
-          console.log('4. Set redirect URL to: https://your-project.supabase.co/auth/v1/callback')
-          console.log('5. Save the configuration')
+          console.group('🔧 CONFIGURATION ISSUE DETECTED')
+          console.log(`The ${provider} provider appears to be misconfigured. Please verify:`)
+          console.log('1. Provider is enabled in Supabase Dashboard → Authentication → Providers')
+          console.log('2. Correct OAuth credentials are entered (API Key and Secret)')
+          console.log('3. Callback URL is set to: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+          console.log('4. Required scopes are configured')
+          
+          if (provider === 'twitter') {
+            console.log('\n📱 Twitter/X Setup:')
+            console.log('- Go to https://developer.twitter.com/en/portal/dashboard')
+            console.log('- Create a new app or use existing one')
+            console.log('- Get your API Key and API Secret Key')
+            console.log('- Enable OAuth 2.0 with PKCE')
+            console.log('- Set callback URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+          } else {
+            console.log('\n💼 LinkedIn Setup:')
+            console.log('- Go to https://developer.linkedin.com/apps')
+            console.log('- Create a new app or use existing one')
+            console.log('- Get your Client ID and Client Secret')
+            console.log('- Add "Sign In with LinkedIn using OpenID Connect" product')
+            console.log('- Set redirect URL: https://kqjgrolqbwgavnhzkfdc.supabase.co/auth/v1/callback')
+          }
           console.groupEnd()
           
         } else if (error.message.includes('Invalid login credentials')) {
-          userFriendlyMessage = 'Invalid credentials. Please check your login information.'
+          userFriendlyMessage = 'Invalid credentials. Please check your OAuth app configuration.'
         } else if (error.message.includes('Email not confirmed')) {
           userFriendlyMessage = 'Please confirm your email address before signing in.'
         } else if (error.message.includes('Too many requests')) {
