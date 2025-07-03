@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js'
 import { supabase, DatabaseOperations } from '../lib/supabase'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { AuthDebugger, ProviderConfigChecker } from '../lib/auth-debug'
 
 interface AuthContextType {
   user: User | null
@@ -12,6 +13,7 @@ interface AuthContextType {
   signInWithProvider: (provider: 'twitter' | 'linkedin') => Promise<void>
   signOut: () => Promise<void>
   refreshUserProfile: () => Promise<void>
+  debugAuthSystem: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,9 +26,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Generate initial auth system report
+    AuthDebugger.generateAuthReport()
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.id)
+      AuthDebugger.logAuthFlow('Initial Session Check', { 
+        hasSession: !!session,
+        userId: session?.user?.id 
+      })
+      
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -39,14 +48,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.id)
+      AuthDebugger.logAuthFlow('Auth State Change', { 
+        event, 
+        hasSession: !!session,
+        userId: session?.user?.id 
+      })
       
       setSession(session)
       setUser(session?.user ?? null)
       
       if (event === 'SIGNED_IN' && session?.user) {
         try {
-          console.log('User signed in, creating profile...')
+          AuthDebugger.logAuthFlow('User Sign In Process Started')
+          
           // Create or update user profile
           await handleUserSignIn(session.user)
           await loadUserProfile(session.user.id)
@@ -54,16 +68,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Navigate to dashboard after successful sign in
           navigate('/dashboard')
           toast.success('Successfully connected! Welcome to Postify!')
+          
+          AuthDebugger.logAuthFlow('User Sign In Process Completed')
         } catch (error) {
-          console.error('Error during sign in process:', error)
+          AuthDebugger.logError(error, 'Sign In Process')
           toast.error('Connected successfully, but there was an issue setting up your profile.')
         }
       } else if (event === 'SIGNED_OUT') {
+        AuthDebugger.logAuthFlow('User Signed Out')
         setUserProfile(null)
         navigate('/')
         toast.success('Successfully signed out!')
       } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed for user:', session?.user?.id)
+        AuthDebugger.logAuthFlow('Token Refreshed', { userId: session?.user?.id })
       }
       
       setLoading(false)
@@ -74,8 +91,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleUserSignIn = async (user: User) => {
     try {
-      console.log('Creating/updating user profile for:', user.id)
-      console.log('User metadata:', user.user_metadata)
+      AuthDebugger.logAuthFlow('Creating User Profile', {
+        userId: user.id,
+        email: user.email,
+        metadata: user.user_metadata
+      })
       
       // Extract user data from different providers
       const userData = {
@@ -85,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         avatar_url: extractAvatarUrl(user)
       }
 
-      console.log('User data to upsert:', userData)
+      AuthDebugger.logAuthFlow('User Data Extracted', userData)
 
       const result = await DatabaseOperations.upsertUser(userData)
       
@@ -93,10 +113,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to create user profile')
       }
 
-      console.log('User profile created/updated successfully:', result.id)
+      AuthDebugger.logAuthFlow('User Profile Created Successfully', { profileId: result.id })
       
     } catch (error) {
-      console.error('Error handling user sign in:', error)
+      AuthDebugger.logError(error, 'User Sign In Handler')
       throw error
     }
   }
@@ -105,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Try different metadata fields based on provider
     const metadata = user.user_metadata || {}
     
-    return (
+    const name = (
       metadata.full_name ||
       metadata.name ||
       metadata.display_name ||
@@ -117,12 +137,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user.email?.split('@')[0] ||
       'User'
     )
+
+    AuthDebugger.logAuthFlow('Name Extraction', { 
+      extractedName: name,
+      availableFields: Object.keys(metadata)
+    })
+
+    return name
   }
 
   const extractAvatarUrl = (user: User): string | undefined => {
     const metadata = user.user_metadata || {}
     
-    return (
+    const avatarUrl = (
       metadata.avatar_url ||
       metadata.picture ||
       metadata.profile_image_url ||
@@ -130,27 +157,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       metadata.image ||
       undefined
     )
+
+    AuthDebugger.logAuthFlow('Avatar URL Extraction', { 
+      extractedUrl: avatarUrl,
+      availableFields: Object.keys(metadata)
+    })
+
+    return avatarUrl
   }
 
   const loadUserProfile = async (userId: string) => {
     try {
-      console.log('Loading user profile for:', userId)
+      AuthDebugger.logAuthFlow('Loading User Profile', { userId })
+      
       const profile = await DatabaseOperations.getUserById(userId)
       
       if (profile) {
-        console.log('User profile loaded successfully')
+        AuthDebugger.logAuthFlow('User Profile Loaded Successfully')
         setUserProfile(profile)
       } else {
-        console.warn('No user profile found for:', userId)
+        AuthDebugger.logAuthFlow('No User Profile Found', { userId })
       }
     } catch (error) {
-      console.error('Error loading user profile:', error)
+      AuthDebugger.logError(error, 'Load User Profile')
     }
   }
 
   const signInWithProvider = async (provider: 'twitter' | 'linkedin') => {
     try {
       setLoading(true)
+      
+      AuthDebugger.logAuthFlow('OAuth Sign In Started', { provider })
+      
+      // Check provider status first
+      const providerStatus = await ProviderConfigChecker.checkProviderStatus(provider)
+      AuthDebugger.logAuthFlow('Provider Status Check', providerStatus)
       
       // Map provider names to Supabase provider names
       const providerMap = {
@@ -168,9 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      console.log('Initiating OAuth with provider:', supabaseProvider, 'scopes:', scopes)
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const authOptions = {
         provider: supabaseProvider,
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
@@ -180,25 +219,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             prompt: 'consent'
           }
         }
+      }
+      
+      AuthDebugger.logAuthFlow('OAuth Configuration', {
+        provider: supabaseProvider,
+        scopes,
+        redirectTo: authOptions.options.redirectTo,
+        origin: window.location.origin
       })
 
+      const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
+
       if (error) {
-        console.error('OAuth error:', error)
+        AuthDebugger.logError(error, 'OAuth Sign In')
         
-        // Handle specific error cases
-        if (error.message.includes('provider is not enabled')) {
-          throw new Error(`${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'} authentication is not configured yet. Please contact support or try the other provider.`)
-        } else if (error.message.includes('validation_failed')) {
-          throw new Error(`Authentication configuration error. Please try again or contact support.`)
+        // Enhanced error handling with specific messages
+        let userFriendlyMessage = ''
+        
+        if (error.message.includes('provider is not enabled') || error.message.includes('validation_failed')) {
+          userFriendlyMessage = `${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'} authentication is not configured in the system yet. Please try the other provider or contact support.`
+          
+          // Log detailed configuration help
+          console.group('🔧 CONFIGURATION REQUIRED')
+          console.log(`To fix this error, configure ${provider} OAuth in your Supabase dashboard:`)
+          console.log('1. Go to Supabase Dashboard → Authentication → Providers')
+          console.log(`2. Enable "${provider === 'twitter' ? 'Twitter' : 'LinkedIn (OIDC)'}" provider`)
+          console.log('3. Add your OAuth app credentials (Client ID, Client Secret)')
+          console.log('4. Set redirect URL to: https://your-project.supabase.co/auth/v1/callback')
+          console.log('5. Save the configuration')
+          console.groupEnd()
+          
+        } else if (error.message.includes('Invalid login credentials')) {
+          userFriendlyMessage = 'Invalid credentials. Please check your login information.'
+        } else if (error.message.includes('Email not confirmed')) {
+          userFriendlyMessage = 'Please confirm your email address before signing in.'
+        } else if (error.message.includes('Too many requests')) {
+          userFriendlyMessage = 'Too many login attempts. Please wait a moment and try again.'
         } else {
-          throw new Error(`Failed to connect with ${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'}: ${error.message}`)
+          userFriendlyMessage = `Failed to connect with ${provider === 'twitter' ? 'X (Twitter)' : 'LinkedIn'}: ${error.message}`
         }
+        
+        throw new Error(userFriendlyMessage)
       }
 
-      console.log('OAuth initiated successfully:', data)
+      AuthDebugger.logAuthFlow('OAuth Initiated Successfully', { 
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : []
+      })
       
     } catch (error) {
-      console.error('Sign in error:', error)
+      AuthDebugger.logError(error, 'Sign In With Provider')
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
       toast.error(errorMessage)
       throw error
@@ -210,12 +280,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true)
-      console.log('Signing out user')
+      AuthDebugger.logAuthFlow('Sign Out Started')
       
       const { error } = await supabase.auth.signOut()
       
       if (error) {
-        console.error('Sign out error:', error)
+        AuthDebugger.logError(error, 'Sign Out')
         toast.error('Failed to sign out')
         throw error
       }
@@ -225,8 +295,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(null)
       setUserProfile(null)
       
+      AuthDebugger.logAuthFlow('Sign Out Completed')
+      
     } catch (error) {
-      console.error('Sign out error:', error)
+      AuthDebugger.logError(error, 'Sign Out Process')
     } finally {
       setLoading(false)
     }
@@ -238,6 +310,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const debugAuthSystem = () => {
+    AuthDebugger.generateAuthReport()
+    
+    // Test both providers
+    ProviderConfigChecker.checkProviderStatus('twitter')
+    ProviderConfigChecker.checkProviderStatus('linkedin')
+    
+    // Test connectivity
+    AuthDebugger.testProviderConnectivity('twitter')
+    AuthDebugger.testProviderConnectivity('linkedin')
+  }
+
   const value = {
     user,
     session,
@@ -245,7 +329,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signInWithProvider,
     signOut,
-    refreshUserProfile
+    refreshUserProfile,
+    debugAuthSystem
   }
 
   return (

@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '../../contexts/AuthContext'
+import { AuthDebugger } from '../../lib/auth-debug'
 import { 
   Shield, 
   Users, 
@@ -21,7 +22,10 @@ import {
   FileText,
   AlertCircle,
   Loader2,
-  Info
+  Info,
+  Settings,
+  ExternalLink,
+  Bug
 } from 'lucide-react'
 
 interface AuthModalProps {
@@ -35,12 +39,21 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
   const [showPermissions, setShowPermissions] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { signInWithProvider, loading } = useAuth()
+  const [showDebugInfo, setShowDebugInfo] = useState(false)
+  const { signInWithProvider, loading, debugAuthSystem } = useAuth()
+
+  // Debug mode detection (show debug info in development)
+  useEffect(() => {
+    setShowDebugInfo(import.meta.env.DEV)
+  }, [])
 
   const handleProviderSelect = (provider: 'twitter' | 'linkedin') => {
     setSelectedProvider(provider)
     setShowPermissions(true)
     setError(null)
+    
+    // Log provider selection for debugging
+    AuthDebugger.logAuthFlow('Provider Selected', { provider })
   }
 
   const handleContinue = async () => {
@@ -48,12 +61,28 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       try {
         setIsConnecting(true)
         setError(null)
+        
+        AuthDebugger.logAuthFlow('Authentication Attempt Started', { provider: selectedProvider })
+        
         await signInWithProvider(selectedProvider)
         // Don't close modal here - let the auth context handle navigation
       } catch (err) {
-        console.error('Authentication error:', err)
+        AuthDebugger.logError(err, 'Authentication Modal')
+        
         const errorMessage = err instanceof Error ? err.message : `Failed to connect with ${selectedProvider}. Please try again.`
         setError(errorMessage)
+        
+        // Show additional debug info for configuration errors
+        if (errorMessage.includes('not configured')) {
+          console.group('🔧 SETUP INSTRUCTIONS')
+          console.log(`To enable ${selectedProvider} authentication:`)
+          console.log('1. Go to your Supabase Dashboard')
+          console.log('2. Navigate to Authentication → Providers')
+          console.log(`3. Enable ${selectedProvider === 'twitter' ? 'Twitter' : 'LinkedIn (OIDC)'} provider`)
+          console.log('4. Add your OAuth app credentials')
+          console.log('5. Configure redirect URLs')
+          console.groupEnd()
+        }
       } finally {
         setIsConnecting(false)
       }
@@ -73,6 +102,11 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
       setError(null)
       onClose()
     }
+  }
+
+  const handleDebugAuth = () => {
+    debugAuthSystem()
+    toast.success('Debug information logged to console. Check browser developer tools.')
   }
 
   const getProviderPermissions = (provider: 'twitter' | 'linkedin') => {
@@ -155,6 +189,34 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
     }
   }
 
+  const getConfigurationInstructions = (provider: 'twitter' | 'linkedin') => {
+    if (provider === 'twitter') {
+      return {
+        title: 'Twitter/X OAuth Setup Required',
+        steps: [
+          'Go to Supabase Dashboard → Authentication → Providers',
+          'Enable "Twitter" provider',
+          'Create a Twitter Developer App at developer.twitter.com',
+          'Add your Twitter API Key and API Secret Key',
+          'Set redirect URL to: https://your-project.supabase.co/auth/v1/callback',
+          'Save configuration and try again'
+        ]
+      }
+    } else {
+      return {
+        title: 'LinkedIn OAuth Setup Required',
+        steps: [
+          'Go to Supabase Dashboard → Authentication → Providers',
+          'Enable "LinkedIn (OIDC)" provider',
+          'Create a LinkedIn App at developer.linkedin.com',
+          'Add your LinkedIn Client ID and Client Secret',
+          'Set redirect URL to: https://your-project.supabase.co/auth/v1/callback',
+          'Save configuration and try again'
+        ]
+      }
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
@@ -164,6 +226,30 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
           </DialogTitle>
         </DialogHeader>
 
+        {/* Debug Panel (Development Only) */}
+        {showDebugInfo && (
+          <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Bug className="h-4 w-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-800">Debug Mode</span>
+              </div>
+              <Button
+                onClick={handleDebugAuth}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                Run Debug
+              </Button>
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              Development mode detected. Debug information will be logged to console.
+            </p>
+          </div>
+        )}
+
+        {/* Error Display */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
             <div className="flex items-center space-x-2">
@@ -171,15 +257,35 @@ export function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
               <span className="text-sm font-medium text-red-800">Connection Failed</span>
             </div>
             <p className="text-xs text-red-700 mt-1">{error}</p>
-            {error.includes('not configured') && (
-              <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-                <div className="flex items-center space-x-2">
-                  <Info className="h-3 w-3 text-blue-600" />
-                  <span className="text-xs font-medium text-blue-800">Setup Required</span>
+            
+            {/* Configuration Help */}
+            {error.includes('not configured') && selectedProvider && (
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Settings className="h-3 w-3 text-blue-600" />
+                  <span className="text-xs font-medium text-blue-800">
+                    {getConfigurationInstructions(selectedProvider).title}
+                  </span>
                 </div>
-                <p className="text-xs text-blue-700 mt-1">
-                  The social media provider needs to be configured in the admin panel. Please try the other provider or contact support.
-                </p>
+                <ol className="text-xs text-blue-700 space-y-1">
+                  {getConfigurationInstructions(selectedProvider).steps.map((step, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="mr-2">{index + 1}.</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+                <div className="mt-2 pt-2 border-t border-blue-200">
+                  <a
+                    href="https://supabase.com/docs/guides/auth/social-login"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    View Supabase OAuth Documentation
+                  </a>
+                </div>
               </div>
             )}
           </div>

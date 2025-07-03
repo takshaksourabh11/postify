@@ -13,14 +13,21 @@ import {
   TrendingUp,
   Eye,
   Heart,
-  Share2
+  Share2,
+  AlertCircle,
+  CheckCircle,
+  Bug
 } from 'lucide-react'
 
 export default function Dashboard() {
-  const { user, userProfile, signOut } = useAuth()
+  const { user, userProfile, signOut, debugAuthSystem } = useAuth()
 
   const handleSignOut = async () => {
     await signOut()
+  }
+
+  const handleDebugAuth = () => {
+    debugAuthSystem()
   }
 
   return (
@@ -53,6 +60,18 @@ export default function Dashboard() {
                 </Badge>
               </div>
               
+              {/* Debug Button (Development Only) */}
+              {import.meta.env.DEV && (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={handleDebugAuth}
+                  title="Debug Authentication System"
+                >
+                  <Bug className="h-4 w-4" />
+                </Button>
+              )}
+              
               <Button variant="ghost" size="icon">
                 <Settings className="h-4 w-4" />
               </Button>
@@ -76,6 +95,29 @@ export default function Dashboard() {
             Here's what's happening with your social media presence today.
           </p>
         </div>
+
+        {/* Connection Status */}
+        {user && (
+          <div className="mb-8">
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  <span className="font-medium text-green-800">Account Connected Successfully</span>
+                </div>
+                <p className="text-sm text-green-700 mt-1">
+                  Your social media account is connected and ready for content management.
+                </p>
+                <div className="mt-2 text-xs text-gray-600">
+                  <strong>User ID:</strong> {user.id}<br />
+                  <strong>Email:</strong> {user.email}<br />
+                  <strong>Provider:</strong> {user.app_metadata?.provider || 'Unknown'}<br />
+                  <strong>Connected:</strong> {new Date(user.created_at).toLocaleString()}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -240,7 +282,7 @@ export default function Dashboard() {
               <div className="text-center">
                 <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">Analytics chart will be displayed here</p>
-                <p className="text-sm text-gray-400">Connect your accounts to see detailed insights</p>
+                <p className="text-sm text-gray-400">Your social media performance data will appear once you start posting</p>
               </div>
             </div>
           </CardContent>
