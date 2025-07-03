@@ -118,7 +118,7 @@ export class DatabaseOperations {
           console.log('👤 No existing user found, will create new profile')
         }
 
-        // Prepare user record
+        // Prepare user record with proper defaults
         const userRecord = {
           id: userData.id,
           email: cleanEmail,
@@ -126,7 +126,7 @@ export class DatabaseOperations {
           avatar_url: userData.avatar_url || null,
           updated_at: new Date().toISOString(),
           last_login_at: new Date().toISOString(),
-          // Only set defaults for new users
+          // Set defaults for new users only
           ...(existingUser ? {} : {
             plan_type: 'free' as const,
             preferences: {
@@ -136,8 +136,7 @@ export class DatabaseOperations {
               push_notifications: true,
               auto_scheduling: false,
               default_post_time: '09:00'
-            },
-            created_at: new Date().toISOString()
+            }
           })
         }
 
@@ -145,7 +144,8 @@ export class DatabaseOperations {
           id: userRecord.id,
           email: userRecord.email,
           name: userRecord.name,
-          isUpdate: !!existingUser
+          isUpdate: !!existingUser,
+          hasDefaults: !existingUser
         })
 
         // Use upsert with proper conflict resolution
@@ -168,9 +168,28 @@ export class DatabaseOperations {
           
           lastError = new Error(`Database error: ${error.message} (Code: ${error.code})`)
           
+          // Check for specific error types
+          if (error.code === 'PGRST116') {
+            console.log('🔍 PGRST116 error - trying INSERT instead of UPSERT')
+            
+            // Try direct INSERT for new users
+            const { data: insertData, error: insertError } = await supabase
+              .from('users')
+              .insert(userRecord)
+              .select()
+              .single()
+            
+            if (insertError) {
+              console.error('❌ INSERT also failed:', insertError)
+              lastError = new Error(`Insert failed: ${insertError.message}`)
+            } else if (insertData) {
+              console.log('✅ User inserted successfully via INSERT:', insertData.id)
+              return insertData
+            }
+          }
+          
           // Don't retry on certain errors
           if (
-            error.code === 'PGRST116' || // Not found
             error.message.includes('JWT') || 
             error.message.includes('permission') ||
             error.message.includes('RLS') ||

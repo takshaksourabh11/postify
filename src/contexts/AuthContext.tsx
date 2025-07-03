@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase, DatabaseOperations, X_API_CONFIG } from '../lib/supabase'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { AuthDebugger, ProviderConfigChecker } from '../lib/auth-debug'
 
 interface AuthContextType {
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     // Generate initial auth system report
@@ -38,11 +39,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Callback URL:', X_API_CONFIG.callbackUrl)
     console.groupEnd()
     
+    // Check for OAuth callback with code parameter
+    const urlParams = new URLSearchParams(location.search)
+    const authCode = urlParams.get('code')
+    
+    if (authCode) {
+      console.log('🔍 OAuth callback detected with code:', authCode)
+      // Clear the URL parameters to prevent issues
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       AuthDebugger.logAuthFlow('Initial Session Check', { 
         hasSession: !!session,
-        userId: session?.user?.id 
+        userId: session?.user?.id,
+        hasAuthCode: !!authCode
       })
       
       setSession(session)
@@ -60,7 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       AuthDebugger.logAuthFlow('Auth State Change', { 
         event, 
         hasSession: !!session,
-        userId: session?.user?.id 
+        userId: session?.user?.id,
+        currentPath: location.pathname
       })
       
       setSession(session)
@@ -75,18 +88,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await loadUserProfile(session.user.id)
           
           // Navigate to dashboard after successful sign in
-          navigate('/dashboard')
+          console.log('🚀 Redirecting to dashboard after successful authentication')
+          navigate('/dashboard', { replace: true })
           toast.success('Successfully connected to X! Welcome to Postify!')
           
           AuthDebugger.logAuthFlow('User Sign In Process Completed')
         } catch (error) {
           AuthDebugger.logError(error, 'Sign In Process')
           toast.error('Connected successfully, but there was an issue setting up your profile.')
+          // Still navigate to dashboard even if profile creation fails
+          navigate('/dashboard', { replace: true })
         }
       } else if (event === 'SIGNED_OUT') {
         AuthDebugger.logAuthFlow('User Signed Out')
         setUserProfile(null)
-        navigate('/')
+        navigate('/', { replace: true })
         toast.success('Successfully signed out!')
       } else if (event === 'TOKEN_REFRESHED') {
         AuthDebugger.logAuthFlow('Token Refreshed', { userId: session?.user?.id })
@@ -96,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [navigate, location])
 
   const handleUserSignIn = async (user: User) => {
     const maxRetries = 5
@@ -140,21 +156,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           error.message.includes('permission') ||
           error.message.includes('PGRST116')
         )) {
-          throw lastError
+          console.log('🚫 Non-retryable error, but continuing with authentication flow')
+          break
         }
         
         if (attempt === maxRetries) {
-          throw lastError
+          console.log('🔥 All retry attempts exhausted, but continuing with authentication flow')
+          break
         }
         
         // Wait before retry with exponential backoff
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
-        console.log(`Retrying user creation in ${delay}ms...`)
+        console.log(`⏳ Retrying user creation in ${delay}ms...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
 
-    throw lastError || new Error('Failed to create user profile after all retries')
+    // Don't throw error - let the user proceed to dashboard even if profile creation fails
+    if (lastError) {
+      console.warn('⚠️ User profile creation failed, but allowing authentication to proceed:', lastError.message)
+    }
   }
 
   const extractUserName = (user: User): string => {
@@ -262,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      // Get the correct redirect URL
+      // Get the correct redirect URL - MUST point to dashboard
       const redirectTo = `${window.location.origin}/dashboard`
       
       const authOptions = {
@@ -289,6 +310,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           callbackUrl: X_API_CONFIG.callbackUrl
         } : null
       })
+
+      console.log('🚀 Initiating OAuth with redirect URL:', redirectTo)
 
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
 
@@ -343,8 +366,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       AuthDebugger.logAuthFlow('OAuth Initiated Successfully', { 
         hasData: !!data,
-        dataKeys: data ? Object.keys(data) : []
+        dataKeys: data ? Object.keys(data) : [],
+        redirectUrl: data?.url
       })
+
+      console.log('✅ OAuth initiated, user will be redirected to:', data?.url)
       
     } catch (error) {
       AuthDebugger.logError(error, 'Sign In With Provider')
