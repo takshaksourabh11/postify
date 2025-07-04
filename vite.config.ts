@@ -10,4 +10,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Ensure environment variables are loaded properly
+  envPrefix: 'VITE_',
+  // Add better error handling for missing env vars
+  define: {
+    // This helps with debugging environment issues
+    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
+  }
 })

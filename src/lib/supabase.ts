@@ -1,10 +1,30 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Environment variables with fallbacks and validation
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+// Enhanced environment validation
+if (!supabaseUrl) {
+  console.error('❌ VITE_SUPABASE_URL is missing from environment variables')
+  console.error('Please check your .env file and ensure VITE_SUPABASE_URL is set')
+  throw new Error('Missing VITE_SUPABASE_URL environment variable')
+}
+
+if (!supabaseAnonKey) {
+  console.error('❌ VITE_SUPABASE_ANON_KEY is missing from environment variables')
+  console.error('Please check your .env file and ensure VITE_SUPABASE_ANON_KEY is set')
+  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable')
+}
+
+// Log environment status (only in development)
+if (import.meta.env.DEV) {
+  console.group('🔧 SUPABASE ENVIRONMENT CHECK')
+  console.log('Supabase URL:', supabaseUrl)
+  console.log('Anon Key Present:', !!supabaseAnonKey)
+  console.log('Anon Key Length:', supabaseAnonKey?.length || 0)
+  console.log('Environment Mode:', import.meta.env.MODE)
+  console.groupEnd()
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
