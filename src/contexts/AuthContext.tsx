@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation()
 
   useEffect(() => {
-    console.group('🚀 AUTH SYSTEM INITIALIZATION')
+    console.group('🚀 AUTH SYSTEM INITIALIZATION - VITE/REACT SPA')
     console.log('Current URL:', window.location.href)
     console.log('Current Path:', location.pathname)
     console.log('Search Params:', location.search)
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Callback URL:', X_API_CONFIG.callbackUrl)
     console.groupEnd()
     
-    // Check for OAuth callback parameters - CRITICAL FIX
+    // CRITICAL: For Vite/React SPA, we need to handle OAuth callback differently
     const urlParams = new URLSearchParams(location.search)
     const authCode = urlParams.get('code')
     const error = urlParams.get('error')
@@ -52,18 +52,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (authCode) {
       console.log('🔍 OAuth callback detected with code:', authCode.substring(0, 10) + '...')
-      console.log('🚨 CRITICAL: OAuth callback should be handled by Supabase, not our app!')
+      console.log('🔄 This is expected for Vite/React SPA - Supabase will handle the session creation')
       
-      // This indicates a configuration problem - the callback URL is wrong
-      console.error('❌ CONFIGURATION ERROR: OAuth callback URL is misconfigured!')
-      console.error('Expected: Supabase should handle the callback at /auth/v1/callback')
-      console.error('Actual: Our app is receiving the callback directly')
-      
-      toast.error('OAuth configuration error. Please check callback URL settings.')
-      
-      // Clear the URL parameters to prevent loops
+      // Clear the URL parameters to clean up the URL
       const cleanUrl = window.location.pathname
       window.history.replaceState({}, document.title, cleanUrl)
+      console.log('🧹 URL cleaned, removed OAuth parameters')
     }
     
     if (error) {
@@ -355,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       
-      console.group('🚀 OAUTH SIGN IN PROCESS')
+      console.group('🚀 OAUTH SIGN IN PROCESS - VITE/REACT SPA')
       console.log('Provider:', provider)
       console.log('Current URL:', window.location.href)
       
@@ -381,12 +375,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const scopes = scopeMap[supabaseProvider]
       
-      // CRITICAL FIX: Use Supabase's callback URL, not our app URL
-      const redirectTo = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`
-      
-      console.log('🔧 CRITICAL FIX: Using Supabase callback URL instead of app URL')
-      console.log('Previous (incorrect):', `${window.location.origin}/dashboard`)
-      console.log('New (correct):', redirectTo)
+      // CRITICAL FOR VITE/REACT SPA: Redirect back to our app, not Supabase callback
+      const redirectTo = `${window.location.origin}/dashboard`
       
       const authOptions = {
         provider: supabaseProvider,
@@ -400,7 +390,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
       
-      console.log('🔧 OAuth Configuration:', {
+      console.log('🔧 OAuth Configuration for Vite/React SPA:', {
         provider: supabaseProvider,
         scopes,
         redirectTo: authOptions.options.redirectTo,
@@ -421,7 +411,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } : null
       })
 
-      console.log('🚀 Initiating OAuth with Supabase callback URL:', redirectTo)
+      console.log('🚀 Initiating OAuth with redirect URL:', redirectTo)
 
       const { data, error } = await supabase.auth.signInWithOAuth(authOptions)
 
@@ -533,7 +523,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const debugAuthSystem = () => {
-    console.group('🔍 AUTH SYSTEM DEBUG')
+    console.group('🔍 AUTH SYSTEM DEBUG - VITE/REACT SPA')
     
     AuthDebugger.generateAuthReport()
     
@@ -565,17 +555,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     ))
     console.groupEnd()
     
-    // CRITICAL: Check callback URL configuration
-    console.group('🚨 CALLBACK URL CONFIGURATION CHECK')
-    console.log('Current app origin:', window.location.origin)
+    // CRITICAL: Check callback URL configuration for Vite/React SPA
+    console.group('🚨 VITE/REACT SPA CALLBACK CONFIGURATION')
+    console.log('App Origin:', window.location.origin)
     console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
-    console.log('Expected callback URL:', `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
-    console.log('X API callback URL:', X_API_CONFIG.callbackUrl)
+    console.log('X API Callback URL:', X_API_CONFIG.callbackUrl)
+    console.log('Expected Supabase Callback:', `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
     console.log('Callback URLs match:', X_API_CONFIG.callbackUrl === `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
+    
+    console.log('\n📋 VITE/REACT SPA FLOW:')
+    console.log('1. User clicks "Connect with X"')
+    console.log('2. OAuth redirects to X with Supabase callback URL')
+    console.log('3. X redirects to Supabase callback with auth code')
+    console.log('4. Supabase processes auth code and creates session')
+    console.log('5. Supabase redirects back to our app with session')
+    console.log('6. Our app detects session and navigates to dashboard')
     
     if (X_API_CONFIG.callbackUrl !== `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`) {
       console.error('❌ CALLBACK URL MISMATCH!')
-      console.error('This is likely the cause of the redirect issue.')
+      console.error('This will cause OAuth to fail.')
       console.error('Please update the callback URL in your X Developer Portal to:', `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`)
     } else {
       console.log('✅ Callback URLs are correctly configured')
